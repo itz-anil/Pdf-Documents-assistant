@@ -48,7 +48,3 @@ flutter {
     source = "../.."
 }
 
-dependencies {
-    // Hindi (Devanagari) on-device text recognition model.
-    implementation("com.google.mlkit:text-recognition-devanagari:16.0.1")
-}

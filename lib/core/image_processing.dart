@@ -5,16 +5,29 @@ import 'dart:typed_data';
 
 import 'package:image/image.dart' as img;
 
+import 'edge_detect.dart';
 import 'models.dart';
 
-/// Everything a worker isolate needs to (re)render one page.
+// Page pipeline:
+//   original (as captured) --warp by quad--> base (flat page, cached)
+//   base --rotate, filter, adjust--> processed + thumbnail
+// Filter / rotation edits only redo the second step, so they stay fast.
+
+/// Flattens [original] by [quad] into the cached base image. Returns [w, h].
+Future<List<int>> buildBase(String original, Quad? quad, String out, int maxSide) => Isolate.run(() {
+      var im = loadImage(original);
+      im = isFullQuad(quad) ? limitSize(im, maxSide) : warpQuad(im, quad!, maxSide: maxSide);
+      File(out).writeAsBytesSync(img.encodeJpg(im, quality: 93));
+      return [im.width, im.height];
+    });
+
+/// Everything a worker isolate needs to render a page from its base.
 class ProcessParams {
   final String src;
   final String out;
   final String thumb;
   final PageFilter filter;
   final int quarterTurns;
-  final List<double>? crop;
   final double brightness;
   final double contrast;
   final int maxSide;
@@ -26,7 +39,6 @@ class ProcessParams {
     required this.thumb,
     required this.filter,
     required this.quarterTurns,
-    required this.crop,
     required this.brightness,
     required this.contrast,
     required this.maxSide,
@@ -38,35 +50,30 @@ class ProcessParams {
 Future<List<int>> processPage(ProcessParams p) => Isolate.run(() => _process(p));
 
 List<int> _process(ProcessParams p) {
-  var im = _load(p.src);
-  final crop = p.crop;
-  if (crop != null) {
-    final x = (crop[0] * im.width).round().clamp(0, im.width - 1);
-    final y = (crop[1] * im.height).round().clamp(0, im.height - 1);
-    final w = ((crop[2] - crop[0]) * im.width).round().clamp(1, im.width - x);
-    final h = ((crop[3] - crop[1]) * im.height).round().clamp(1, im.height - y);
-    im = img.copyCrop(im, x: x, y: y, width: w, height: h);
-  }
+  var im = loadImage(p.src);
   final turns = p.quarterTurns % 4;
   if (turns != 0) im = img.copyRotate(im, angle: 90 * turns);
-  im = _limit(im, p.maxSide);
+  im = limitSize(im, p.maxSide);
   im = applyFilter(im, p.filter, brightness: p.brightness, contrast: p.contrast);
   File(p.out).writeAsBytesSync(img.encodeJpg(im, quality: p.jpegQuality));
   _writeThumb(im, p.thumb);
   return [im.width, im.height];
 }
 
-img.Image _load(String path) {
+img.Image loadImage(String path) {
   final decoded = img.decodeImage(File(path).readAsBytesSync());
-  if (decoded == null) throw const FormatException('Unsupported image');
+  if (decoded == null) throw const FormatException('This image format is not supported');
   var im = img.bakeOrientation(decoded);
   if (im.numChannels != 3 || im.format != img.Format.uint8) {
-    im = im.convert(format: img.Format.uint8, numChannels: 3);
+    final flat = img.Image(width: im.width, height: im.height, numChannels: 3);
+    img.fill(flat, color: img.ColorRgb8(255, 255, 255));
+    img.compositeImage(flat, im.convert(format: img.Format.uint8, numChannels: 4));
+    im = flat;
   }
   return im;
 }
 
-img.Image _limit(img.Image im, int maxSide) {
+img.Image limitSize(img.Image im, int maxSide) {
   final longest = math.max(im.width, im.height);
   if (longest <= maxSide) return im;
   return im.width >= im.height
@@ -77,9 +84,30 @@ img.Image _limit(img.Image im, int maxSide) {
 void _writeThumb(img.Image im, String path) {
   final th = im.width >= im.height
       ? img.copyResize(im, width: 420, interpolation: img.Interpolation.average)
-      : img.copyResize(im, height: 520, interpolation: img.Interpolation.average);
-  File(path).writeAsBytesSync(img.encodeJpg(th, quality: 78));
+      : img.copyResize(im, height: 560, interpolation: img.Interpolation.average);
+  File(path).writeAsBytesSync(img.encodeJpg(th, quality: 80));
 }
+
+/// Finds the document outline in an image file (null = use the whole image).
+Future<Quad?> detectQuadInFile(String path) => Isolate.run(() {
+      final (g, w, h) = grayForDetection(loadImage(path));
+      return detectQuad(g, w, h);
+    });
+
+/// Normalises an arbitrary picked or captured image into a JPEG at [out].
+Future<List<int>> normaliseImage(String src, String out) => Isolate.run(() {
+      final im = limitSize(loadImage(src), 4000);
+      File(out).writeAsBytesSync(img.encodeJpg(im, quality: 94));
+      return [im.width, im.height];
+    });
+
+/// Reads image dimensions (after EXIF rotation).
+Future<List<int>> imageSize(String path) => Isolate.run(() {
+      final im = loadImage(path);
+      return [im.width, im.height];
+    });
+
+// ------------------------------------------------------------------ filters
 
 Uint8List _lut(double gamma) {
   final t = Uint8List(256);
@@ -89,8 +117,8 @@ Uint8List _lut(double gamma) {
   return t;
 }
 
-/// Estimates the paper's lighting (bright background) so shadows can be
-/// divided out. Max-filter removes dark text before blurring.
+/// Estimates the paper's lighting so shadows can be divided out.
+/// A max-filter removes dark text before blurring.
 Uint8List _background(img.Image im) {
   final sw = math.max(8, im.width ~/ 24);
   var small = img.copyResize(im, width: sw, interpolation: img.Interpolation.average);
@@ -104,8 +132,7 @@ Uint8List _background(img.Image im) {
         for (var dy = -2; dy <= 2; dy++) {
           final yy = (y + dy).clamp(0, h - 1);
           for (var dx = -2; dx <= 2; dx++) {
-            final xx = (x + dx).clamp(0, w - 1);
-            final v = src[(yy * w + xx) * 3 + c];
+            final v = src[(yy * w + (x + dx).clamp(0, w - 1)) * 3 + c];
             if (v > m) m = v;
           }
         }
@@ -181,36 +208,84 @@ img.Image applyFilter(img.Image im, PageFilter filter, {double brightness = 0, d
   return img.Image.fromBytes(width: im.width, height: im.height, bytes: px.buffer, numChannels: 3);
 }
 
-/// Book mode: splits a two-page spread into left and right pages.
-Future<void> splitSpread(String src, String left, String right) => Isolate.run(() {
-      final im = _load(src);
-      final half = im.width ~/ 2;
-      final gutter = (im.width * 0.01).round();
-      File(left).writeAsBytesSync(
-          img.encodeJpg(img.copyCrop(im, x: 0, y: 0, width: half - gutter, height: im.height), quality: 92));
-      File(right).writeAsBytesSync(img.encodeJpg(
-          img.copyCrop(im, x: half + gutter, y: 0, width: im.width - half - gutter, height: im.height),
-          quality: 92));
+/// Small previews of every filter for the editor's filter strip.
+Future<List<Uint8List>> filterPreviews(String base, int quarterTurns) => Isolate.run(() {
+      var im = loadImage(base);
+      if (quarterTurns % 4 != 0) im = img.copyRotate(im, angle: 90 * (quarterTurns % 4));
+      im = im.width >= im.height
+          ? img.copyResize(im, width: 220, interpolation: img.Interpolation.average)
+          : img.copyResize(im, height: 260, interpolation: img.Interpolation.average);
+      return [for (final f in PageFilter.values) img.encodeJpg(applyFilter(im, f), quality: 82)];
     });
 
-/// ID card mode: front (and optional back) laid out on one A4 page.
-Future<void> composeIdCard(String front, String? back, String out) => Isolate.run(() {
-      const pw = 2480, ph = 3508; // A4 @ 300 dpi
+// ------------------------------------------------------------ scan modes
+
+/// Book mode: flattens a two-page spread and splits it at the spine.
+Future<void> splitSpread(String src, Quad? quad, String left, String right) => Isolate.run(() {
+      var im = loadImage(src);
+      if (!isFullQuad(quad)) im = warpQuad(im, quad!, maxSide: 4200);
+      final half = im.width ~/ 2;
+      final gutter = (im.width * 0.008).round();
+      File(left).writeAsBytesSync(
+          img.encodeJpg(img.copyCrop(im, x: 0, y: 0, width: half - gutter, height: im.height), quality: 93));
+      File(right).writeAsBytesSync(img.encodeJpg(
+          img.copyCrop(im, x: half + gutter, y: 0, width: im.width - half - gutter, height: im.height),
+          quality: 93));
+    });
+
+enum IdCardSize { large, actual }
+
+/// One side of an ID card: source image, outline and extra rotation.
+class IdSide {
+  final String path;
+  final Quad? quad;
+  final int quarterTurns;
+  const IdSide(this.path, this.quad, [this.quarterTurns = 0]);
+}
+
+/// Flattens one ID card side (cropped, rotated, landscape) into [out].
+Future<void> renderIdSide(IdSide side, String out) => Isolate.run(() {
+      File(out).writeAsBytesSync(img.encodeJpg(_idSide(side), quality: 92));
+    });
+
+img.Image _idSide(IdSide side) {
+  var card = loadImage(side.path);
+  if (!isFullQuad(side.quad)) card = warpQuad(card, side.quad!, maxSide: 2400);
+  if (side.quarterTurns % 4 != 0) card = img.copyRotate(card, angle: 90 * (side.quarterTurns % 4));
+  return card;
+}
+
+/// ID card mode: front and back laid out on one A4 page (300 dpi).
+/// [IdCardSize.actual] prints the card at its real size (85.6 × 54 mm).
+Future<void> composeIdCard(IdSide front, IdSide? back, String out, {IdCardSize size = IdCardSize.large}) =>
+    Isolate.run(() {
+      const pw = 2480, ph = 3508;
       final page = img.Image(width: pw, height: ph, numChannels: 3);
       img.fill(page, color: img.ColorRgb8(255, 255, 255));
-      void place(String path, int top) {
-        var card = _load(path);
-        if (card.height > card.width) card = img.copyRotate(card, angle: 90);
-        card = img.copyResize(card, width: 1500, interpolation: img.Interpolation.average);
-        if (card.height > 1300) {
-          card = img.copyResize(card, height: 1300, interpolation: img.Interpolation.average);
-        }
-        img.compositeImage(page, card, dstX: (pw - card.width) ~/ 2, dstY: top);
+      final sides = [_idSide(front), if (back != null) _idSide(back)];
+      // Fit every side into the same box so both sides line up.
+      final boxW = size == IdCardSize.actual ? 1011 : 1820;
+      final boxH = size == IdCardSize.actual ? 638 : (back == null ? 2400 : 1500);
+      final placed = <img.Image>[];
+      for (final s in sides) {
+        final scale = math.min(boxW / s.width, boxH / s.height);
+        placed.add(img.copyResize(s,
+            width: math.max(1, (s.width * scale).round()),
+            height: math.max(1, (s.height * scale).round()),
+            interpolation: img.Interpolation.cubic));
       }
-
-      place(front, 260);
-      if (back != null) place(back, 1860);
-      File(out).writeAsBytesSync(img.encodeJpg(page, quality: 92));
+      final gap = size == IdCardSize.actual ? 160 : 180;
+      final totalH = placed.fold<int>(0, (a, b) => a + b.height) + gap * (placed.length - 1);
+      var y = size == IdCardSize.actual ? 300 : (ph - totalH) ~/ 2;
+      for (final p in placed) {
+        final x = (pw - p.width) ~/ 2;
+        // hairline frame so the card edge stays visible on white paper
+        img.drawRect(page,
+            x1: x - 2, y1: y - 2, x2: x + p.width + 1, y2: y + p.height + 1, color: img.ColorRgb8(214, 218, 225), thickness: 2);
+        img.compositeImage(page, p, dstX: x, dstY: y);
+        y += p.height + gap;
+      }
+      File(out).writeAsBytesSync(img.encodeJpg(page, quality: 93));
     });
 
 /// Converts raw BGRA pixels (e.g. a rendered PDF page) into a JPEG file.
@@ -231,35 +306,6 @@ Future<void> writeBgraAsJpeg(Uint8List bgra, int width, int height, String out, 
 
 /// Re-encodes an image file with a size/quality budget. Returns new bytes.
 Future<Uint8List> recompress(String path, int maxSide, int quality) => Isolate.run(() {
-      final im = _limit(_load(path), maxSide);
+      final im = limitSize(loadImage(path), maxSide);
       return img.encodeJpg(im, quality: quality);
-    });
-
-/// Normalises an arbitrary picked image into a JPEG at [out].
-Future<void> normaliseImage(String src, String out) => Isolate.run(() {
-      final im = _limit(_load(src), 4000);
-      File(out).writeAsBytesSync(img.encodeJpg(im, quality: 93));
-    });
-
-/// Reads image dimensions without full processing.
-Future<List<int>> imageSize(String path) => Isolate.run(() {
-      final im = _load(path);
-      return [im.width, im.height];
-    });
-
-/// Small previews of every filter for the editor's filter strip.
-Future<List<Uint8List>> filterPreviews(String original, List<double>? crop, int quarterTurns) => Isolate.run(() {
-      var im = _load(original);
-      if (crop != null) {
-        final x = (crop[0] * im.width).round().clamp(0, im.width - 1);
-        final y = (crop[1] * im.height).round().clamp(0, im.height - 1);
-        final w = ((crop[2] - crop[0]) * im.width).round().clamp(1, im.width - x);
-        final h = ((crop[3] - crop[1]) * im.height).round().clamp(1, im.height - y);
-        im = img.copyCrop(im, x: x, y: y, width: w, height: h);
-      }
-      if (quarterTurns % 4 != 0) im = img.copyRotate(im, angle: 90 * (quarterTurns % 4));
-      im = im.width >= im.height
-          ? img.copyResize(im, width: 220, interpolation: img.Interpolation.average)
-          : img.copyResize(im, height: 260, interpolation: img.Interpolation.average);
-      return [for (final f in PageFilter.values) img.encodeJpg(applyFilter(im, f), quality: 80)];
     });

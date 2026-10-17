@@ -17,25 +17,23 @@ abstract final class PhosphorIconsBold {
 
 abstract final class PhosphorIconsDuotone {
   static const IconData addressBook = IconData(0xe6f9, fontFamily: 'PhosphorDuotone');
-  static const IconData arrowClockwise = IconData(0xe037, fontFamily: 'PhosphorDuotone');
+  static const IconData aperture = IconData(0xe00b, fontFamily: 'PhosphorDuotone');
   static const IconData arrowCounterClockwise = IconData(0xe039, fontFamily: 'PhosphorDuotone');
   static const IconData arrowSquareOut = IconData(0xe5df, fontFamily: 'PhosphorDuotone');
   static const IconData arrowsClockwise = IconData(0xe095, fontFamily: 'PhosphorDuotone');
   static const IconData arrowsInSimple = IconData(0xe09f, fontFamily: 'PhosphorDuotone');
-  static const IconData arrowsOut = IconData(0xe0a3, fontFamily: 'PhosphorDuotone');
   static const IconData bookOpen = IconData(0xe0e7, fontFamily: 'PhosphorDuotone');
   static const IconData briefcase = IconData(0xe0ef, fontFamily: 'PhosphorDuotone');
   static const IconData broom = IconData(0xec55, fontFamily: 'PhosphorDuotone');
   static const IconData buildings = IconData(0xe105, fontFamily: 'PhosphorDuotone');
   static const IconData calendarCheck = IconData(0xe713, fontFamily: 'PhosphorDuotone');
-  static const IconData camera = IconData(0xe10f, fontFamily: 'PhosphorDuotone');
+  static const IconData cameraSlash = IconData(0xe111, fontFamily: 'PhosphorDuotone');
   static const IconData chalkboard = IconData(0xe5fd, fontFamily: 'PhosphorDuotone');
   static const IconData checkSquare = IconData(0xe187, fontFamily: 'PhosphorDuotone');
   static const IconData circle = IconData(0xe18b, fontFamily: 'PhosphorDuotone');
   static const IconData circleHalf = IconData(0xe18d, fontFamily: 'PhosphorDuotone');
   static const IconData copy = IconData(0xe1cb, fontFamily: 'PhosphorDuotone');
   static const IconData copySimple = IconData(0xe1cd, fontFamily: 'PhosphorDuotone');
-  static const IconData crop = IconData(0xe1d5, fontFamily: 'PhosphorDuotone');
   static const IconData downloadSimple = IconData(0xe20d, fontFamily: 'PhosphorDuotone');
   static const IconData envelopeSimple = IconData(0xe219, fontFamily: 'PhosphorDuotone');
   static const IconData eraser = IconData(0xe21f, fontFamily: 'PhosphorDuotone');
@@ -60,7 +58,6 @@ abstract final class PhosphorIconsDuotone {
   static const IconData identificationCard = IconData(0xe2c9, fontFamily: 'PhosphorDuotone');
   static const IconData image = IconData(0xe2cb, fontFamily: 'PhosphorDuotone');
   static const IconData images = IconData(0xe837, fontFamily: 'PhosphorDuotone');
-  static const IconData lightning = IconData(0xe2df, fontFamily: 'PhosphorDuotone');
   static const IconData link = IconData(0xe2e3, fontFamily: 'PhosphorDuotone');
   static const IconData listBullets = IconData(0xe2f3, fontFamily: 'PhosphorDuotone');
   static const IconData lockKey = IconData(0xe2ff, fontFamily: 'PhosphorDuotone');
@@ -89,7 +86,6 @@ abstract final class PhosphorIconsDuotone {
   static const IconData selection = IconData(0xe69b, fontFamily: 'PhosphorDuotone');
   static const IconData shareNetwork = IconData(0xe40b, fontFamily: 'PhosphorDuotone');
   static const IconData signature = IconData(0xebad, fontFamily: 'PhosphorDuotone');
-  static const IconData slidersHorizontal = IconData(0xe435, fontFamily: 'PhosphorDuotone');
   static const IconData sortAscending = IconData(0xe445, fontFamily: 'PhosphorDuotone');
   static const IconData sortDescending = IconData(0xe447, fontFamily: 'PhosphorDuotone');
   static const IconData sparkle = IconData(0xe6a3, fontFamily: 'PhosphorDuotone');
@@ -103,7 +99,6 @@ abstract final class PhosphorIconsDuotone {
   static const IconData textAa = IconData(0xe6ef, fontFamily: 'PhosphorDuotone');
   static const IconData textT = IconData(0xe48b, fontFamily: 'PhosphorDuotone');
   static const IconData textbox = IconData(0xeb0b, fontFamily: 'PhosphorDuotone');
-  static const IconData translate = IconData(0xe4a3, fontFamily: 'PhosphorDuotone');
   static const IconData trash = IconData(0xe4a7, fontFamily: 'PhosphorDuotone');
   static const IconData unite = IconData(0xe87f, fontFamily: 'PhosphorDuotone');
   static const IconData user = IconData(0xe4c3, fontFamily: 'PhosphorDuotone');
@@ -115,7 +110,9 @@ abstract final class PhosphorIconsDuotone {
 
 abstract final class PhosphorIconsFill {
   static const IconData checkCircle = IconData(0xe184, fontFamily: 'PhosphorFill');
+  static const IconData flashlight = IconData(0xe246, fontFamily: 'PhosphorFill');
   static const IconData gearSix = IconData(0xe272, fontFamily: 'PhosphorFill');
+  static const IconData gridFour = IconData(0xe296, fontFamily: 'PhosphorFill');
   static const IconData house = IconData(0xe2c2, fontFamily: 'PhosphorFill');
   static const IconData lightning = IconData(0xe2de, fontFamily: 'PhosphorFill');
   static const IconData squaresFour = IconData(0xe464, fontFamily: 'PhosphorFill');
@@ -125,31 +122,43 @@ abstract final class PhosphorIconsFill {
 }
 
 abstract final class PhosphorIconsRegular {
+  static const IconData arrowClockwise = IconData(0xe036, fontFamily: 'PhosphorRegular');
+  static const IconData arrowCounterClockwise = IconData(0xe038, fontFamily: 'PhosphorRegular');
+  static const IconData camera = IconData(0xe10e, fontFamily: 'PhosphorRegular');
+  static const IconData copy = IconData(0xe1ca, fontFamily: 'PhosphorRegular');
+  static const IconData cornersOut = IconData(0xe1d0, fontFamily: 'PhosphorRegular');
+  static const IconData crop = IconData(0xe1d4, fontFamily: 'PhosphorRegular');
   static const IconData eye = IconData(0xe220, fontFamily: 'PhosphorRegular');
   static const IconData eyeSlash = IconData(0xe224, fontFamily: 'PhosphorRegular');
   static const IconData gearSix = IconData(0xe272, fontFamily: 'PhosphorRegular');
+  static const IconData gridFour = IconData(0xe296, fontFamily: 'PhosphorRegular');
   static const IconData house = IconData(0xe2c2, fontFamily: 'PhosphorRegular');
+  static const IconData images = IconData(0xe836, fontFamily: 'PhosphorRegular');
+  static const IconData lightningA = IconData(0xea84, fontFamily: 'PhosphorRegular');
+  static const IconData lightningSlash = IconData(0xe2e0, fontFamily: 'PhosphorRegular');
+  static const IconData magicWand = IconData(0xe6b6, fontFamily: 'PhosphorRegular');
   static const IconData magnifyingGlass = IconData(0xe30c, fontFamily: 'PhosphorRegular');
+  static const IconData signature = IconData(0xebac, fontFamily: 'PhosphorRegular');
+  static const IconData slidersHorizontal = IconData(0xe434, fontFamily: 'PhosphorRegular');
   static const IconData squaresFour = IconData(0xe464, fontFamily: 'PhosphorRegular');
+  static const IconData trash = IconData(0xe4a6, fontFamily: 'PhosphorRegular');
 }
 
 /// Second (translucent) layer of each duotone glyph.
 const Map<int, IconData> duotoneSecondary = {
-  0xe037: IconData(0xe036, fontFamily: 'PhosphorDuotone'),
+  0xe00b: IconData(0xe00a, fontFamily: 'PhosphorDuotone'),
   0xe039: IconData(0xe038, fontFamily: 'PhosphorDuotone'),
   0xe095: IconData(0xe094, fontFamily: 'PhosphorDuotone'),
   0xe09f: IconData(0xe09e, fontFamily: 'PhosphorDuotone'),
-  0xe0a3: IconData(0xe0a2, fontFamily: 'PhosphorDuotone'),
   0xe0e7: IconData(0xe0e6, fontFamily: 'PhosphorDuotone'),
   0xe0ef: IconData(0xe0ee, fontFamily: 'PhosphorDuotone'),
   0xe105: IconData(0xe102, fontFamily: 'PhosphorDuotone'),
-  0xe10f: IconData(0xe10e, fontFamily: 'PhosphorDuotone'),
+  0xe111: IconData(0xe110, fontFamily: 'PhosphorDuotone'),
   0xe187: IconData(0xe186, fontFamily: 'PhosphorDuotone'),
   0xe18b: IconData(0xe18a, fontFamily: 'PhosphorDuotone'),
   0xe18d: IconData(0xe18c, fontFamily: 'PhosphorDuotone'),
   0xe1cb: IconData(0xe1ca, fontFamily: 'PhosphorDuotone'),
   0xe1cd: IconData(0xe1cc, fontFamily: 'PhosphorDuotone'),
-  0xe1d5: IconData(0xe1d4, fontFamily: 'PhosphorDuotone'),
   0xe20d: IconData(0xe20c, fontFamily: 'PhosphorDuotone'),
   0xe219: IconData(0xe218, fontFamily: 'PhosphorDuotone'),
   0xe21f: IconData(0xe21e, fontFamily: 'PhosphorDuotone'),
@@ -165,7 +174,6 @@ const Map<int, IconData> duotoneSecondary = {
   0xe2a1: IconData(0xe2a0, fontFamily: 'PhosphorDuotone'),
   0xe2c9: IconData(0xe2c8, fontFamily: 'PhosphorDuotone'),
   0xe2cb: IconData(0xe2ca, fontFamily: 'PhosphorDuotone'),
-  0xe2df: IconData(0xe2de, fontFamily: 'PhosphorDuotone'),
   0xe2e3: IconData(0xe2e2, fontFamily: 'PhosphorDuotone'),
   0xe2f3: IconData(0xe2f2, fontFamily: 'PhosphorDuotone'),
   0xe2ff: IconData(0xe2fe, fontFamily: 'PhosphorDuotone'),
@@ -184,7 +192,6 @@ const Map<int, IconData> duotoneSecondary = {
   0xe3e7: IconData(0xe3e6, fontFamily: 'PhosphorDuotone'),
   0xe3f1: IconData(0xe3ec, fontFamily: 'PhosphorDuotone'),
   0xe40b: IconData(0xe408, fontFamily: 'PhosphorDuotone'),
-  0xe435: IconData(0xe434, fontFamily: 'PhosphorDuotone'),
   0xe445: IconData(0xe444, fontFamily: 'PhosphorDuotone'),
   0xe447: IconData(0xe446, fontFamily: 'PhosphorDuotone'),
   0xe465: IconData(0xe464, fontFamily: 'PhosphorDuotone'),
@@ -193,7 +200,6 @@ const Map<int, IconData> duotoneSecondary = {
   0xe473: IconData(0xe472, fontFamily: 'PhosphorDuotone'),
   0xe479: IconData(0xe478, fontFamily: 'PhosphorDuotone'),
   0xe48b: IconData(0xe48a, fontFamily: 'PhosphorDuotone'),
-  0xe4a3: IconData(0xe4a2, fontFamily: 'PhosphorDuotone'),
   0xe4a7: IconData(0xe4a6, fontFamily: 'PhosphorDuotone'),
   0xe4c3: IconData(0xe4c2, fontFamily: 'PhosphorDuotone'),
   0xe4d1: IconData(0xe4d0, fontFamily: 'PhosphorDuotone'),

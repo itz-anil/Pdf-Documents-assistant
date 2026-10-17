@@ -105,7 +105,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   child: EmptyState(
                     icon: PhosphorIconsDuotone.textAa,
                     title: 'Find anything you scanned',
-                    message: 'DocMind reads the text on every page (English and Hindi), so you can search inside bills, notes and letters.',
+                    message: 'DocMind reads the text on every page, so you can search inside bills, notes and letters.',
                   ),
                 )
               : results.isEmpty

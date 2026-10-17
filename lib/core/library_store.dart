@@ -9,6 +9,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
+import 'edge_detect.dart';
 import 'image_processing.dart';
 import 'models.dart';
 import 'ocr_service.dart';
@@ -17,6 +18,15 @@ import 'settings.dart';
 const _uuid = Uuid();
 
 String newId() => _uuid.v4().replaceAll('-', '').substring(0, 16);
+
+/// One image to turn into a page. [quad] is its document outline; with
+/// [detect] the outline is found automatically (gallery imports).
+class PageSource {
+  final String path;
+  final Quad? quad;
+  final bool detect;
+  const PageSource(this.path, {this.quad, this.detect = false});
+}
 
 /// Makes a string safe to use as a file name on every platform.
 String safeFileName(String name) {
@@ -89,6 +99,7 @@ class LibraryStore extends ChangeNotifier {
   File processedFile(DocItem d, PageItem pg) => fileOf(d, pg.processed);
   File thumbFile(DocItem d, PageItem pg) => fileOf(d, pg.thumb);
   File originalFile(DocItem d, PageItem pg) => fileOf(d, pg.original);
+  File baseFile(DocItem d, PageItem pg) => fileOf(d, pg.base);
 
   DocItem? byId(String id) {
     for (final d in docs) {
@@ -113,11 +124,12 @@ class LibraryStore extends ChangeNotifier {
   // ---------------------------------------------------------------- creation
 
   Future<DocItem> createDocument({
-    required List<String> imagePaths,
+    required List<PageSource> pages,
     ScanMode mode = ScanMode.document,
     String? name,
     String? folderId,
     PageFilter? filter,
+    void Function(int done, int total)? onProgress,
   }) async {
     final now = DateTime.now();
     final doc = DocItem(
@@ -131,8 +143,16 @@ class LibraryStore extends ChangeNotifier {
     );
     if (name == null) _autoNamed.add(doc.id);
     await docDir(doc).create(recursive: true);
-    for (final src in imagePaths) {
-      doc.pages.add(await _importPage(doc, src, filter ?? mode.preferredFilter ?? settings.defaultFilter));
+    final f = filter ?? mode.preferredFilter ?? settings.defaultFilter;
+    try {
+      for (var i = 0; i < pages.length; i++) {
+        doc.pages.add(await _importPage(doc, pages[i], f));
+        onProgress?.call(i + 1, pages.length);
+      }
+    } catch (_) {
+      final dir = docDir(doc);
+      if (await dir.exists()) await dir.delete(recursive: true);
+      rethrow;
     }
     docs.insert(0, doc);
     _persist();
@@ -141,35 +161,55 @@ class LibraryStore extends ChangeNotifier {
     return doc;
   }
 
-  Future<void> addPages(DocItem doc, List<String> imagePaths, {PageFilter? filter}) async {
-    for (final src in imagePaths) {
-      doc.pages.add(await _importPage(doc, src, filter ?? settings.defaultFilter));
+  Future<void> addPages(DocItem doc, List<PageSource> pages, {PageFilter? filter}) async {
+    final f = filter ?? doc.mode.preferredFilter ?? settings.defaultFilter;
+    for (final src in pages) {
+      doc.pages.add(await _importPage(doc, src, f));
+      notifyListeners();
     }
     touch(doc);
     if (settings.autoOcr) queueOcr(doc);
   }
 
-  Future<PageItem> _importPage(DocItem doc, String src, PageFilter filter) async {
+  Future<PageItem> _importPage(DocItem doc, PageSource src, PageFilter filter) async {
     final pid = newId();
     final original = 'o_$pid.jpg';
-    await normaliseImage(src, fileOf(doc, original).path);
-    final page = PageItem(id: pid, original: original, processed: '', thumb: '', filter: filter);
+    await normaliseImage(src.path, fileOf(doc, original).path);
+    final quad = src.detect ? await detectQuadInFile(fileOf(doc, original).path) : src.quad;
+    final page = PageItem(id: pid, original: original, processed: '', thumb: '', filter: filter, quad: quad);
+    await _renderBase(doc, page);
     await _render(doc, page);
     return page;
   }
 
+  Future<void> _deleteFile(DocItem doc, String name) async {
+    if (name.isEmpty) return;
+    final f = fileOf(doc, name);
+    FileImage(f).evict();
+    if (await f.exists()) await f.delete();
+  }
+
+  /// Rebuilds the flattened base image from the original and its outline.
+  Future<void> _renderBase(DocItem doc, PageItem page) async {
+    final base = 'b_${page.id}_${DateTime.now().microsecondsSinceEpoch}.jpg';
+    await buildBase(fileOf(doc, page.original).path, page.quad, fileOf(doc, base).path, 4000);
+    final old = page.base;
+    page.base = base;
+    await _deleteFile(doc, old);
+  }
+
   Future<void> _render(DocItem doc, PageItem page) async {
+    if (page.base.isEmpty || !await fileOf(doc, page.base).exists()) await _renderBase(doc, page);
     final rev = DateTime.now().microsecondsSinceEpoch;
     final processed = 'p_${page.id}_$rev.jpg';
     final thumb = 't_${page.id}_$rev.jpg';
     final q = settings.quality;
     final size = await processPage(ProcessParams(
-      src: fileOf(doc, page.original).path,
+      src: fileOf(doc, page.base).path,
       out: fileOf(doc, processed).path,
       thumb: fileOf(doc, thumb).path,
       filter: page.filter,
       quarterTurns: page.quarterTurns,
-      crop: page.crop,
       brightness: page.brightness,
       contrast: page.contrast,
       maxSide: q.maxSide,
@@ -181,12 +221,8 @@ class LibraryStore extends ChangeNotifier {
       ..thumb = thumb
       ..width = size[0]
       ..height = size[1];
-    for (final old in [oldP, oldT]) {
-      if (old.isEmpty) continue;
-      final f = fileOf(doc, old);
-      FileImage(f).evict();
-      if (await f.exists()) await f.delete();
-    }
+    await _deleteFile(doc, oldP);
+    await _deleteFile(doc, oldT);
   }
 
   // ----------------------------------------------------------------- editing
@@ -197,21 +233,23 @@ class LibraryStore extends ChangeNotifier {
     PageItem page, {
     PageFilter? filter,
     int? quarterTurns,
-    List<double>? crop,
-    bool clearCrop = false,
+    List<double>? quad,
+    bool clearQuad = false,
     double? brightness,
     double? contrast,
   }) async {
-    final geometryChanged = quarterTurns != null || crop != null || clearCrop;
+    final outlineChanged = quad != null || clearQuad;
+    final geometryChanged = quarterTurns != null || outlineChanged;
     if (filter != null) page.filter = filter;
     if (quarterTurns != null) page.quarterTurns = quarterTurns % 4;
-    if (crop != null) page.crop = crop;
-    if (clearCrop) page.crop = null;
+    if (quad != null) page.quad = quad;
+    if (clearQuad) page.quad = null;
     if (brightness != null) page.brightness = brightness;
     if (contrast != null) page.contrast = contrast;
     busyPages.add(page.id);
     notifyListeners();
     try {
+      if (outlineChanged) await _renderBase(doc, page);
       await _render(doc, page);
     } finally {
       busyPages.remove(page.id);
@@ -229,21 +267,28 @@ class LibraryStore extends ChangeNotifier {
     }
   }
 
-  /// Replaces a page's source image (used after annotating / signing).
-  Future<void> replacePageImage(DocItem doc, PageItem page, String newImagePath) async {
+  /// Replaces a page's source image (after Fill & Sign, or a retake).
+  /// [keepFilter] keeps the page's look; markup passes false so ink colours stay true.
+  Future<void> replacePageImage(DocItem doc, PageItem page, String newImagePath, {Quad? quad, bool keepFilter = false}) async {
     final original = 'o_${page.id}_${DateTime.now().millisecondsSinceEpoch}.jpg';
     await normaliseImage(newImagePath, fileOf(doc, original).path);
-    final old = fileOf(doc, page.original);
-    if (await old.exists()) await old.delete();
+    await _deleteFile(doc, page.original);
     page
       ..original = original
-      ..filter = PageFilter.original
+      ..quad = quad
       ..quarterTurns = 0
-      ..crop = null
       ..brightness = 0
       ..contrast = 1
       ..ocrDone = false;
-    await _render(doc, page);
+    if (!keepFilter) page.filter = PageFilter.original;
+    busyPages.add(page.id);
+    notifyListeners();
+    try {
+      await _renderBase(doc, page);
+      await _render(doc, page);
+    } finally {
+      busyPages.remove(page.id);
+    }
     touch(doc);
     if (settings.autoOcr) queueOcr(doc);
   }
@@ -257,9 +302,8 @@ class LibraryStore extends ChangeNotifier {
 
   Future<void> deletePage(DocItem doc, PageItem page) async {
     doc.pages.remove(page);
-    for (final f in [page.original, page.processed, page.thumb]) {
-      final file = fileOf(doc, f);
-      if (await file.exists()) await file.delete();
+    for (final f in [page.original, page.base, page.processed, page.thumb]) {
+      await _deleteFile(doc, f);
     }
     if (doc.pages.isEmpty) {
       await deleteDocs([doc]);
@@ -269,19 +313,24 @@ class LibraryStore extends ChangeNotifier {
   }
 
   Future<void> duplicatePage(DocItem doc, PageItem page) async {
-    final copy = await _importPage(doc, originalFile(doc, page).path, page.filter);
+    final pid = newId();
+    final copy = PageItem.fromJson(page.toJson()..['id'] = pid);
     copy
-      ..quarterTurns = page.quarterTurns
-      ..crop = page.crop
-      ..brightness = page.brightness
-      ..contrast = page.contrast;
-    await _render(doc, copy);
-    copy
-      ..ocrText = page.ocrText
-      ..ocrLines = List.of(page.ocrLines)
-      ..ocrDone = page.ocrDone;
+      ..original = 'o_$pid.jpg'
+      ..base = 'b_${pid}_0.jpg'
+      ..processed = 'p_${pid}_0.jpg'
+      ..thumb = 't_${pid}_0.jpg';
+    await _copyPageFiles(doc, page, doc, copy);
     doc.pages.insert(doc.pages.indexOf(page) + 1, copy);
     touch(doc);
+  }
+
+  Future<void> _copyPageFiles(DocItem fromDoc, PageItem from, DocItem toDoc, PageItem to) async {
+    if (from.base.isEmpty) await _renderBase(fromDoc, from);
+    await fileOf(fromDoc, from.original).copy(fileOf(toDoc, to.original).path);
+    await fileOf(fromDoc, from.base).copy(fileOf(toDoc, to.base).path);
+    await fileOf(fromDoc, from.processed).copy(fileOf(toDoc, to.processed).path);
+    await fileOf(fromDoc, from.thumb).copy(fileOf(toDoc, to.thumb).path);
   }
 
   // ------------------------------------------------------------ doc actions
@@ -341,11 +390,10 @@ class LibraryStore extends ChangeNotifier {
         final copy = PageItem.fromJson(pg.toJson()..['id'] = pid);
         copy
           ..original = 'o_$pid.jpg'
+          ..base = 'b_${pid}_0.jpg'
           ..processed = 'p_${pid}_0.jpg'
           ..thumb = 't_${pid}_0.jpg';
-        await originalFile(src, pg).copy(fileOf(doc, copy.original).path);
-        await processedFile(src, pg).copy(fileOf(doc, copy.processed).path);
-        await thumbFile(src, pg).copy(fileOf(doc, copy.thumb).path);
+        await _copyPageFiles(src, pg, doc, copy);
         doc.pages.add(copy);
       }
     }
@@ -406,7 +454,7 @@ class LibraryStore extends ChangeNotifier {
       final file = processedFile(doc, pg);
       if (!await file.exists()) continue;
       try {
-        final r = await OcrService.instance.recognise(file.path, pg.width, pg.height, settings.ocrLanguage);
+        final r = await OcrService.instance.recognise(file.path, pg.width, pg.height);
         pg
           ..ocrText = r.text
           ..ocrLines = r.lines

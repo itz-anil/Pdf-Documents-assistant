@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../app/theme.dart';
+import 'image_processing.dart';
 import 'models.dart';
 
 enum ImageQuality { high, balanced, small }
@@ -39,12 +40,14 @@ extension PageSizeOptionInfo on PageSizeOption {
       };
 }
 
-enum OcrLanguage { english, hindiEnglish }
-
-extension OcrLanguageInfo on OcrLanguage {
+extension IdCardSizeInfo on IdCardSize {
   String get label => switch (this) {
-        OcrLanguage.english => 'English (Latin)',
-        OcrLanguage.hindiEnglish => 'Hindi + English',
+        IdCardSize.large => 'Large',
+        IdCardSize.actual => 'Actual size',
+      };
+  String get hint => switch (this) {
+        IdCardSize.large => 'Both sides fill the page — easy to read',
+        IdCardSize.actual => '85.6 × 54 mm, prints like a photocopy',
       };
 }
 
@@ -55,7 +58,9 @@ class SettingsStore extends ChangeNotifier {
   int accentIndex = 0;
   PageFilter defaultFilter = PageFilter.autoColor;
   bool autoOcr = true;
-  OcrLanguage ocrLanguage = OcrLanguage.hindiEnglish;
+  IdCardSize idCardSize = IdCardSize.large;
+  bool autoCapture = true;
+  bool cameraGrid = false;
   ImageQuality quality = ImageQuality.balanced;
   PageSizeOption pageSize = PageSizeOption.fit;
   bool smartNames = true;
@@ -74,7 +79,9 @@ class SettingsStore extends ChangeNotifier {
     accentIndex = _p.getInt('accent') ?? 0;
     defaultFilter = PageFilter.values[_p.getInt('filter') ?? PageFilter.autoColor.index];
     autoOcr = _p.getBool('autoOcr') ?? true;
-    ocrLanguage = OcrLanguage.values[_p.getInt('ocrLang') ?? OcrLanguage.hindiEnglish.index];
+    idCardSize = IdCardSize.values[_p.getInt('idSize') ?? 0];
+    autoCapture = _p.getBool('autoCapture') ?? true;
+    cameraGrid = _p.getBool('cameraGrid') ?? false;
     quality = ImageQuality.values[_p.getInt('quality') ?? ImageQuality.balanced.index];
     pageSize = PageSizeOption.values[_p.getInt('pageSize') ?? PageSizeOption.fit.index];
     smartNames = _p.getBool('smartNames') ?? true;
@@ -96,7 +103,9 @@ class SettingsStore extends ChangeNotifier {
   set setAccent(int v) => _commit(() => accentIndex = v, () => _p.setInt('accent', v));
   set setDefaultFilter(PageFilter v) => _commit(() => defaultFilter = v, () => _p.setInt('filter', v.index));
   set setAutoOcr(bool v) => _commit(() => autoOcr = v, () => _p.setBool('autoOcr', v));
-  set setOcrLanguage(OcrLanguage v) => _commit(() => ocrLanguage = v, () => _p.setInt('ocrLang', v.index));
+  set setIdCardSize(IdCardSize v) => _commit(() => idCardSize = v, () => _p.setInt('idSize', v.index));
+  set setAutoCapture(bool v) => _commit(() => autoCapture = v, () => _p.setBool('autoCapture', v));
+  set setCameraGrid(bool v) => _commit(() => cameraGrid = v, () => _p.setBool('cameraGrid', v));
   set setQuality(ImageQuality v) => _commit(() => quality = v, () => _p.setInt('quality', v.index));
   set setPageSize(PageSizeOption v) => _commit(() => pageSize = v, () => _p.setInt('pageSize', v.index));
   set setSmartNames(bool v) => _commit(() => smartNames = v, () => _p.setBool('smartNames', v));

@@ -71,15 +71,17 @@ class PageItem {
   final String id;
 
   /// File names inside the document folder.
-  String original;
-  String processed;
+  String original; // as captured
+  String base; // flattened by [quad], cached
+  String processed; // base + rotation + filter
   String thumb;
 
   PageFilter filter;
   int quarterTurns;
 
-  /// Normalised crop rect [left, top, right, bottom] on the original, or null.
-  List<double>? crop;
+  /// Document outline on the original: 4 corners (TL, TR, BR, BL) as
+  /// normalised [x0, y0, … x3, y3]. Null means the whole image.
+  List<double>? quad;
   double brightness; // -0.5 .. 0.5
   double contrast; // 0.5 .. 1.8
   String ocrText;
@@ -91,11 +93,12 @@ class PageItem {
   PageItem({
     required this.id,
     required this.original,
+    this.base = '',
     required this.processed,
     required this.thumb,
     this.filter = PageFilter.autoColor,
     this.quarterTurns = 0,
-    this.crop,
+    this.quad,
     this.brightness = 0,
     this.contrast = 1,
     this.ocrText = '',
@@ -108,11 +111,12 @@ class PageItem {
   Map<String, dynamic> toJson() => {
         'id': id,
         'o': original,
+        'bs': base,
         'p': processed,
         'th': thumb,
         'f': filter.name,
         'q': quarterTurns,
-        'c': crop,
+        'qd': quad,
         'b': brightness,
         'k': contrast,
         'ot': ocrText,
@@ -125,11 +129,12 @@ class PageItem {
   factory PageItem.fromJson(Map<String, dynamic> j) => PageItem(
         id: j['id'] as String,
         original: j['o'] as String,
+        base: j['bs'] as String? ?? '',
         processed: j['p'] as String,
         thumb: j['th'] as String,
         filter: PageFilter.values.firstWhere((f) => f.name == j['f'], orElse: () => PageFilter.original),
         quarterTurns: (j['q'] as num?)?.toInt() ?? 0,
-        crop: (j['c'] as List?)?.map((e) => (e as num).toDouble()).toList(),
+        quad: _quadFromJson(j),
         brightness: (j['b'] as num?)?.toDouble() ?? 0,
         contrast: (j['k'] as num?)?.toDouble() ?? 1,
         ocrText: j['ot'] as String? ?? '',
@@ -138,6 +143,15 @@ class PageItem {
         width: (j['w'] as num?)?.toInt() ?? 0,
         height: (j['h'] as num?)?.toInt() ?? 0,
       );
+}
+
+List<double>? _quadFromJson(Map<String, dynamic> j) {
+  final q = (j['qd'] as List?)?.map((e) => (e as num).toDouble()).toList();
+  if (q != null && q.length == 8) return q;
+  // Version 1 stored a rectangle crop [l, t, r, b].
+  final c = (j['c'] as List?)?.map((e) => (e as num).toDouble()).toList();
+  if (c != null && c.length == 4) return [c[0], c[1], c[2], c[1], c[2], c[3], c[0], c[3]];
+  return null;
 }
 
 class DocItem {

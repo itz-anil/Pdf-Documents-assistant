@@ -1,7 +1,6 @@
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 
 import 'models.dart';
-import 'settings.dart';
 
 class OcrResult {
   final String text;
@@ -14,19 +13,12 @@ class OcrService {
   OcrService._();
   static final instance = OcrService._();
 
-  final Map<OcrLanguage, TextRecognizer> _recognizers = {};
+  TextRecognizer? _recognizer;
 
-  TextRecognizer _get(OcrLanguage lang) => _recognizers.putIfAbsent(
-        lang,
-        () => TextRecognizer(
-          script: lang == OcrLanguage.hindiEnglish
-              ? TextRecognitionScript.devanagiri
-              : TextRecognitionScript.latin,
-        ),
-      );
-
-  Future<OcrResult> recognise(String imagePath, int width, int height, OcrLanguage lang) async {
-    final result = await _get(lang).processImage(InputImage.fromFilePath(imagePath));
+  /// English (Latin script) recognition, fully on-device.
+  Future<OcrResult> recognise(String imagePath, int width, int height) async {
+    final recognizer = _recognizer ??= TextRecognizer(script: TextRecognitionScript.latin);
+    final result = await recognizer.processImage(InputImage.fromFilePath(imagePath));
     final lines = <OcrLine>[];
     if (width > 0 && height > 0) {
       for (final block in result.blocks) {
@@ -47,9 +39,7 @@ class OcrService {
   }
 
   Future<void> dispose() async {
-    for (final r in _recognizers.values) {
-      await r.close();
-    }
-    _recognizers.clear();
+    await _recognizer?.close();
+    _recognizer = null;
   }
 }

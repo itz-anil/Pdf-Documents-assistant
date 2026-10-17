@@ -54,7 +54,7 @@ class _EditorScreenState extends State<EditorScreen> {
     super.dispose();
   }
 
-  String _previewKey(PageItem p) => '${p.id}|${p.original}|${p.crop}|${p.quarterTurns}';
+  String _previewKey(PageItem p) => '${p.id}|${p.base}|${p.quarterTurns}';
 
   void _ensurePreviews(LibraryStore store) {
     if (doc.pages.isEmpty) return;
@@ -62,7 +62,7 @@ class _EditorScreenState extends State<EditorScreen> {
     final key = _previewKey(p);
     if (_previews.containsKey(key) || _loadingPreviews.contains(key)) return;
     _loadingPreviews.add(key);
-    filterPreviews(store.originalFile(doc, p).path, p.crop, p.quarterTurns).then((list) {
+    filterPreviews(store.baseFile(doc, p).path, p.quarterTurns).then((list) {
       if (!mounted) return;
       setState(() {
         _previews[key] = list;
@@ -246,13 +246,14 @@ class _EditorScreenState extends State<EditorScreen> {
                 onFilters: () => setState(() => _panel = _panel == _Panel.filters ? _Panel.none : _Panel.filters),
                 onAdjust: () => setState(() => _panel = _panel == _Panel.adjust ? _Panel.none : _Panel.adjust),
                 onCrop: () async {
-                  final result = await Navigator.of(context).push<List<double>?>(
-                    MaterialPageRoute(builder: (_) => CropScreen(doc: doc, page: page)),
-                  );
-                  if (result == null) return;
-                  final full = result[0] <= 0.001 && result[1] <= 0.001 && result[2] >= 0.999 && result[3] >= 0.999;
-                  await _edit((s) => full ? s.editPage(doc, page, clearCrop: true) : s.editPage(doc, page, crop: result));
+                  final pg = page;
+                  final r = await CropScreen.open(context, store.originalFile(doc, pg).path, pg.quad, pg.quarterTurns);
+                  if (r == null) return;
+                  await _edit((s) => r.quad == null
+                      ? s.editPage(doc, pg, clearQuad: true, quarterTurns: r.quarterTurns)
+                      : s.editPage(doc, pg, quad: r.quad, quarterTurns: r.quarterTurns));
                 },
+                onRetake: () => ScanFlow.retakePage(context, doc, page),
                 onRotate: () => _edit((s) => s.editPage(doc, page, quarterTurns: page.quarterTurns + 1)),
                 onMarkup: () => Navigator.of(context)
                     .push(MaterialPageRoute(builder: (_) => AnnotateScreen(doc: doc, page: page))),
@@ -539,6 +540,7 @@ class _ToolBar extends StatelessWidget {
   final VoidCallback onAdjust;
   final VoidCallback onMarkup;
   final VoidCallback onDuplicate;
+  final VoidCallback onRetake;
   final VoidCallback onDelete;
   const _ToolBar({
     required this.panel,
@@ -549,6 +551,7 @@ class _ToolBar extends StatelessWidget {
     required this.onAdjust,
     required this.onMarkup,
     required this.onDuplicate,
+    required this.onRetake,
     required this.onDelete,
   });
 
@@ -601,13 +604,14 @@ class _ToolBar extends StatelessWidget {
           opacity: busy ? 0.5 : 1,
           child: Row(
             children: [
-              tool(PhosphorIconsDuotone.magicWand, 'Filters', onFilters, active: panel == _Panel.filters),
-              tool(PhosphorIconsDuotone.crop, 'Crop', onCrop),
-              tool(PhosphorIconsDuotone.arrowClockwise, 'Rotate', onRotate),
-              tool(PhosphorIconsDuotone.slidersHorizontal, 'Adjust', onAdjust, active: panel == _Panel.adjust),
-              tool(PhosphorIconsDuotone.signature, 'Markup', onMarkup),
-              tool(PhosphorIconsDuotone.copy, 'Duplicate', onDuplicate),
-              tool(PhosphorIconsDuotone.trash, 'Delete', onDelete, danger: true),
+              tool(PhosphorIconsRegular.magicWand, 'Filters', onFilters, active: panel == _Panel.filters),
+              tool(PhosphorIconsRegular.crop, 'Crop', onCrop),
+              tool(PhosphorIconsRegular.arrowClockwise, 'Rotate', onRotate),
+              tool(PhosphorIconsRegular.slidersHorizontal, 'Adjust', onAdjust, active: panel == _Panel.adjust),
+              tool(PhosphorIconsRegular.signature, 'Sign', onMarkup),
+              tool(PhosphorIconsRegular.camera, 'Retake', onRetake),
+              tool(PhosphorIconsRegular.copy, 'Duplicate', onDuplicate),
+              tool(PhosphorIconsRegular.trash, 'Delete', onDelete, danger: true),
             ],
           ),
         ),

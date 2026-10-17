@@ -5,7 +5,6 @@ import '../app/theme.dart';
 import '../core/models.dart';
 import '../widgets/common.dart';
 import '../widgets/glass.dart';
-import 'qr_screen.dart';
 import 'scan_flow.dart';
 import 'tool_flows.dart';
 
@@ -13,9 +12,8 @@ class _Tool {
   final IconData icon;
   final String title;
   final String subtitle;
-  final Color? tint;
   final Future<void> Function(BuildContext) run;
-  const _Tool(this.icon, this.title, this.subtitle, this.run, {this.tint});
+  const _Tool(this.icon, this.title, this.subtitle, this.run);
 }
 
 class ToolsScreen extends StatelessWidget {
@@ -28,10 +26,8 @@ class ToolsScreen extends StatelessWidget {
         _Tool(PhosphorIconsDuotone.unite, 'Merge PDFs', 'Join files in any order', ToolFlows.merge),
         _Tool(PhosphorIconsDuotone.scissors, 'Split PDF', 'Extract or separate pages', ToolFlows.split),
         _Tool(PhosphorIconsDuotone.arrowsInSimple, 'Compress PDF', 'Shrink large files', ToolFlows.compress),
-        _Tool(PhosphorIconsDuotone.lockKey, 'Protect PDF', 'Add a password', ToolFlows.protect,
-            tint: const Color(0xFF10B981)),
-        _Tool(PhosphorIconsDuotone.lockKeyOpen, 'Remove password', 'Unlock a PDF you own', ToolFlows.removePassword,
-            tint: const Color(0xFFF59E0B)),
+        _Tool(PhosphorIconsDuotone.lockKey, 'Protect PDF', 'Add a password', ToolFlows.protect),
+        _Tool(PhosphorIconsDuotone.lockKeyOpen, 'Remove password', 'Unlock a PDF you own', ToolFlows.removePassword),
         _Tool(PhosphorIconsDuotone.fileImage, 'PDF to JPG', 'Every page as an image', ToolFlows.pdfToImages),
         _Tool(PhosphorIconsDuotone.filePdf, 'Images to PDF', 'Photos into one PDF', ToolFlows.imagesToPdf),
         _Tool(PhosphorIconsDuotone.fileArrowDown, 'Import PDF', 'Edit & sign it in DocMind', (c) => ScanFlow.importPdf(c)),
@@ -40,20 +36,16 @@ class ToolsScreen extends StatelessWidget {
     (
       'Archive',
       [
-        _Tool(PhosphorIconsDuotone.fileZip, 'Create ZIP', 'Bundle any files, optional password', ToolFlows.createZip,
-            tint: const Color(0xFF0EA5E9)),
-        _Tool(PhosphorIconsDuotone.folderOpen, 'Extract ZIP', 'Open ZIP archives', ToolFlows.extractZip,
-            tint: const Color(0xFF0EA5E9)),
+        _Tool(PhosphorIconsDuotone.fileZip, 'Create ZIP', 'Bundle any files, optional password', ToolFlows.createZip),
+        _Tool(PhosphorIconsDuotone.folderOpen, 'Extract ZIP', 'Open ZIP archives', ToolFlows.extractZip),
       ]
     ),
     (
       'Scan & recognise',
       [
         _Tool(PhosphorIconsDuotone.qrCode, 'QR & Barcode', 'Scan codes instantly',
-            (c) => Navigator.of(c).push(MaterialPageRoute(builder: (_) => const QrScreen())),
-            tint: const Color(0xFFEC4899)),
-        _Tool(PhosphorIconsDuotone.textAa, 'Text from image', 'Copy text from photos', ToolFlows.textFromImage,
-            tint: const Color(0xFFEC4899)),
+            ScanFlow.openQr),
+        _Tool(PhosphorIconsDuotone.textAa, 'Text from image', 'Copy text from photos', ToolFlows.textFromImage),
         _Tool(PhosphorIconsDuotone.identificationCard, 'ID Card', 'Front & back on one page',
             (c) => ScanFlow.scan(c, ScanMode.idCard)),
         _Tool(PhosphorIconsDuotone.addressBook, 'Business card', 'Save as a contact',
@@ -117,7 +109,7 @@ class ToolsScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            IconBadge(t.icon, size: 44, tint: t.tint),
+                            IconBadge(t.icon, size: 44),
                             const Spacer(),
                             Text(t.title,
                                 maxLines: 1,

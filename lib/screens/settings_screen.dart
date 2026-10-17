@@ -7,6 +7,7 @@ import '../app/icons.dart';
 import 'package:provider/provider.dart';
 
 import '../app/theme.dart';
+import '../core/image_processing.dart';
 import '../core/library_store.dart';
 import '../core/models.dart';
 import '../core/settings.dart';
@@ -176,6 +177,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
           GlassTile(
+            icon: PhosphorIconsDuotone.aperture,
+            title: 'Auto-capture',
+            subtitle: 'Take the photo when the page is steady',
+            trailing: Switch(value: s.autoCapture, onChanged: (v) => s.setAutoCapture = v),
+            onTap: () => s.setAutoCapture = !s.autoCapture,
+          ),
+          GlassTile(
+            icon: PhosphorIconsDuotone.identificationCard,
+            title: 'ID card size',
+            subtitle: '${s.idCardSize.label} · ${s.idCardSize.hint}',
+            trailing: arrow(),
+            onTap: () async {
+              final v = await pickOption<IdCardSize>(
+                context,
+                title: 'ID card size on the page',
+                options: IdCardSize.values,
+                label: (v) => v.label,
+                subtitle: (v) => v.hint,
+                selected: s.idCardSize,
+                icon: (_) => PhosphorIconsDuotone.identificationCard,
+              );
+              if (v != null) s.setIdCardSize = v;
+            },
+          ),
+          GlassTile(
             icon: PhosphorIconsDuotone.image,
             title: 'Image quality',
             subtitle: '${s.quality.label} · ${s.quality.hint}',
@@ -220,23 +246,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             subtitle: 'Makes scans searchable and PDFs selectable',
             trailing: Switch(value: s.autoOcr, onChanged: (v) => s.setAutoOcr = v),
             onTap: () => s.setAutoOcr = !s.autoOcr,
-          ),
-          GlassTile(
-            icon: PhosphorIconsDuotone.translate,
-            title: 'Language',
-            subtitle: s.ocrLanguage.label,
-            trailing: arrow(),
-            onTap: () async {
-              final l = await pickOption<OcrLanguage>(
-                context,
-                title: 'Recognition language',
-                options: OcrLanguage.values,
-                label: (l) => l.label,
-                selected: s.ocrLanguage,
-                icon: (_) => PhosphorIconsDuotone.translate,
-              );
-              if (l != null) s.setOcrLanguage = l;
-            },
           ),
           GlassTile(
             icon: PhosphorIconsDuotone.tag,

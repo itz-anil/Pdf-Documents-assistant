@@ -17,6 +17,7 @@ import '../core/scan_service.dart';
 import '../core/settings.dart';
 import '../widgets/common.dart';
 import '../widgets/glass.dart';
+import 'camera_screen.dart';
 import 'lock_gate.dart';
 import 'scan_flow.dart';
 
@@ -315,23 +316,18 @@ class ToolFlows {
 
   static Future<void> textFromImage(BuildContext context) async {
     final store = context.read<LibraryStore>();
-    LockGate.externalActivity = true;
-    final List<String> paths;
-    try {
-      paths = await ScanService.pickPhotos();
-    } finally {
-      LockGate.externalActivity = false;
-    }
-    if (paths.isEmpty || !context.mounted) return;
+    // Same camera as every scan; the gallery button lives inside it.
+    final r = await CameraScreen.open(context, mode: CameraMode.document, lockMode: true, purpose: 'Text from image');
+    if (r == null || r.shots.isEmpty || !context.mounted) return;
     final text = await runBusy(context, 'Reading text…', (progress) async {
       final dir = await store.scratch('ocr');
       final parts = <String>[];
-      for (var i = 0; i < paths.length; i++) {
-        progress.value = 'Reading image ${i + 1} of ${paths.length}…';
-        final norm = p.join(dir.path, 'img_$i.jpg');
-        await normaliseImage(paths[i], norm);
-        final r = await OcrService.instance.recognise(norm, 0, 0, store.settings.ocrLanguage);
-        parts.add(r.text);
+      for (var i = 0; i < r.shots.length; i++) {
+        progress.value = 'Reading image ${i + 1} of ${r.shots.length}…';
+        final flat = p.join(dir.path, 'img_$i.jpg');
+        await buildBase(r.shots[i].path, r.shots[i].quad, flat, 3000);
+        final res = await OcrService.instance.recognise(flat, 0, 0);
+        parts.add(res.text);
       }
       return parts.where((t) => t.isNotEmpty).join('\n\n');
     });
@@ -488,7 +484,7 @@ class _MergeScreenState extends State<MergeScreen> {
                               padding: const EdgeInsets.fromLTRB(12, 10, 4, 10),
                               child: Row(
                                 children: [
-                                  IconBadge(PhosphorIconsDuotone.filePdf, size: 44, tint: const Color(0xFFE5484D)),
+                                  IconBadge(PhosphorIconsDuotone.filePdf, size: 44),
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Column(

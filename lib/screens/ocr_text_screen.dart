@@ -7,7 +7,6 @@ import '../app/theme.dart';
 import '../core/export_service.dart';
 import '../core/library_store.dart';
 import '../core/models.dart';
-import '../core/settings.dart';
 import '../widgets/common.dart';
 import '../widgets/glass.dart';
 
@@ -63,17 +62,6 @@ class OcrTextScreen extends StatelessWidget {
                           onTap: pending
                               ? null
                               : () async {
-                                  final settings = context.read<SettingsStore>();
-                                  final lang = await pickOption<OcrLanguage>(
-                                    context,
-                                    title: 'Recognition language',
-                                    options: OcrLanguage.values,
-                                    label: (l) => l.label,
-                                    selected: settings.ocrLanguage,
-                                    icon: (_) => PhosphorIconsDuotone.translate,
-                                  );
-                                  if (lang == null || !context.mounted) return;
-                                  settings.setOcrLanguage = lang;
                                   await runBusy(context, 'Reading text…', (_) => store.runOcrNow(doc, force: true));
                                 },
                         ),

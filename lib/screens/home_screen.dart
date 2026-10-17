@@ -399,6 +399,7 @@ class _QuickActions extends StatelessWidget {
       (PhosphorIconsDuotone.addressBook, 'Card', () => ScanFlow.scan(context, ScanMode.businessCard, folderId: folderId)),
       (PhosphorIconsDuotone.receipt, 'Receipt', () => ScanFlow.scan(context, ScanMode.receipt, folderId: folderId)),
       (PhosphorIconsDuotone.chalkboard, 'Board', () => ScanFlow.scan(context, ScanMode.whiteboard, folderId: folderId)),
+      (PhosphorIconsDuotone.qrCode, 'QR Code', () => ScanFlow.openQr(context)),
       (PhosphorIconsDuotone.images, 'Photos', () => ScanFlow.importPhotos(context, folderId: folderId)),
       (PhosphorIconsDuotone.filePdf, 'PDF', () => ScanFlow.importPdf(context, folderId: folderId)),
     ];

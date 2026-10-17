@@ -9,7 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  google_mlkit_document_scanner: ^0.6.1
+  camera: ^0.12.1
+  google_mlkit_barcode_scanning: ^0.16.1
   google_mlkit_text_recognition: ^0.17.1
   syncfusion_flutter_pdf: ^35.1.40+1
   pdfrx: ^2.6.5
@@ -23,7 +24,6 @@ dependencies:
   image_picker: ^1.2.4
   archive: ^4.5.2
   local_auth: ^3.0.2
-  mobile_scanner: ^7.4.2
   shared_preferences: ^2.5.6
   uuid: ^4.6.0
   intl: ^0.20.3
@@ -38,6 +38,19 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   fonts:
+    # Manrope (SIL OFL 1.1) — see assets/fonts/MANROPE_OFL.txt
+    - family: Manrope
+      fonts:
+        - asset: assets/fonts/Manrope-400.ttf
+          weight: 400
+        - asset: assets/fonts/Manrope-500.ttf
+          weight: 500
+        - asset: assets/fonts/Manrope-600.ttf
+          weight: 600
+        - asset: assets/fonts/Manrope-700.ttf
+          weight: 700
+        - asset: assets/fonts/Manrope-800.ttf
+          weight: 800
     # Phosphor Icons (MIT) — see assets/fonts/PHOSPHOR_LICENSE.txt
     - family: PhosphorRegular
       fonts:

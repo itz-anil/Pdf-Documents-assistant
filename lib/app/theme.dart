@@ -15,12 +15,13 @@ class AccentPalette {
       );
 }
 
+/// Refined single-hue accents: each gradient stays within one colour family.
 const accentPalettes = <AccentPalette>[
-  AccentPalette('Indigo', Color(0xFF6366F1), Color(0xFF8B5CF6)),
-  AccentPalette('Ocean', Color(0xFF0EA5E9), Color(0xFF6366F1)),
-  AccentPalette('Mint', Color(0xFF10B981), Color(0xFF0EA5A4)),
-  AccentPalette('Sunset', Color(0xFFF97316), Color(0xFFEC4899)),
-  AccentPalette('Rose', Color(0xFFE11D48), Color(0xFF9333EA)),
+  AccentPalette('Sapphire', Color(0xFF3B7BFF), Color(0xFF2456E0)),
+  AccentPalette('Emerald', Color(0xFF17B890), Color(0xFF0B8F6C)),
+  AccentPalette('Champagne', Color(0xFFD8B26A), Color(0xFFB98D3E)),
+  AccentPalette('Ruby', Color(0xFFE5484D), Color(0xFFC0303A)),
+  AccentPalette('Graphite', Color(0xFF8C96AA), Color(0xFF5F6A80)),
 ];
 
 /// Design tokens that change with brightness. Read with `Glass.of(context)`.
@@ -57,38 +58,38 @@ class Glass extends ThemeExtension<Glass> {
   static Glass of(BuildContext context) => Theme.of(context).extension<Glass>()!;
 
   factory Glass.dark(AccentPalette accent) => Glass(
-        background: const Color(0xFF090B12),
+        background: const Color(0xFF0A0B0E),
         blobs: [
-          accent.primary.withValues(alpha: 0.38),
-          const Color(0xFF00BFB3).withValues(alpha: 0.20),
-          accent.secondary.withValues(alpha: 0.30),
+          accent.primary.withValues(alpha: 0.16),
+          const Color(0xFFFFFFFF).withValues(alpha: 0.025),
+          accent.secondary.withValues(alpha: 0.08),
         ],
-        fill: Colors.white.withValues(alpha: 0.07),
-        fillStrong: const Color(0xFF161A26).withValues(alpha: 0.72),
-        border: Colors.white.withValues(alpha: 0.12),
-        text: const Color(0xFFF3F5FB),
-        muted: const Color(0xFFA5ABBD),
-        faint: Colors.white.withValues(alpha: 0.05),
-        danger: const Color(0xFFFF6B7A),
-        success: const Color(0xFF34D399),
+        fill: const Color(0xFFFFFFFF).withValues(alpha: 0.045),
+        fillStrong: const Color(0xFF16181E).withValues(alpha: 0.86),
+        border: const Color(0xFFFFFFFF).withValues(alpha: 0.08),
+        text: const Color(0xFFF2F3F5),
+        muted: const Color(0xFF9097A3),
+        faint: const Color(0xFFFFFFFF).withValues(alpha: 0.04),
+        danger: const Color(0xFFFF5A64),
+        success: const Color(0xFF2FCB8F),
         accent: accent,
         dark: true,
       );
 
   factory Glass.light(AccentPalette accent) => Glass(
-        background: const Color(0xFFEFF2F9),
+        background: const Color(0xFFF3F4F6),
         blobs: [
-          accent.primary.withValues(alpha: 0.22),
-          const Color(0xFF00BFB3).withValues(alpha: 0.14),
-          accent.secondary.withValues(alpha: 0.18),
+          accent.primary.withValues(alpha: 0.10),
+          const Color(0xFFFFFFFF).withValues(alpha: 0.7),
+          accent.secondary.withValues(alpha: 0.05),
         ],
-        fill: Colors.white.withValues(alpha: 0.62),
-        fillStrong: Colors.white.withValues(alpha: 0.80),
-        border: Colors.white.withValues(alpha: 0.85),
-        text: const Color(0xFF11131B),
-        muted: const Color(0xFF586074),
-        faint: const Color(0xFF11131B).withValues(alpha: 0.05),
-        danger: const Color(0xFFD92D45),
+        fill: const Color(0xFFFFFFFF).withValues(alpha: 0.78),
+        fillStrong: const Color(0xFFFFFFFF).withValues(alpha: 0.92),
+        border: const Color(0xFF0F1115).withValues(alpha: 0.07),
+        text: const Color(0xFF0F1115),
+        muted: const Color(0xFF5C6370),
+        faint: const Color(0xFF0F1115).withValues(alpha: 0.045),
+        danger: const Color(0xFFD7263D),
         success: const Color(0xFF0E9F6E),
         accent: accent,
         dark: false,
@@ -143,12 +144,13 @@ ThemeData buildTheme({required bool dark, required AccentPalette accent}) {
   ).copyWith(
     primary: accent.primary,
     secondary: accent.secondary,
-    surface: dark ? const Color(0xFF12151F) : const Color(0xFFF7F8FC),
+    surface: dark ? const Color(0xFF131519) : const Color(0xFFFFFFFF),
     error: glass.danger,
   );
   const transitions = SoftPageTransitionsBuilder();
   final base = ThemeData(
     useMaterial3: true,
+    fontFamily: 'Manrope',
     brightness: dark ? Brightness.dark : Brightness.light,
     colorScheme: scheme,
   );
@@ -158,7 +160,7 @@ ThemeData buildTheme({required bool dark, required AccentPalette accent}) {
     textTheme: base.textTheme.apply(
       bodyColor: glass.text,
       displayColor: glass.text,
-      fontFamilyFallback: const ['Roboto', 'Noto Sans Devanagari'],
+      fontFamily: 'Manrope',
     ),
     splashFactory: InkSparkle.splashFactory,
     pageTransitionsTheme: const PageTransitionsTheme(builders: {
@@ -176,7 +178,7 @@ ThemeData buildTheme({required bool dark, required AccentPalette accent}) {
       systemOverlayStyle: dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
     ),
     dialogTheme: DialogThemeData(
-      backgroundColor: dark ? const Color(0xFF171B27) : Colors.white,
+      backgroundColor: dark ? const Color(0xFF17191F) : Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
     ),
     bottomSheetTheme: const BottomSheetThemeData(
@@ -185,7 +187,7 @@ ThemeData buildTheme({required bool dark, required AccentPalette accent}) {
     ),
     snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,
-      backgroundColor: dark ? const Color(0xFF232838) : const Color(0xFF1B1E29),
+      backgroundColor: dark ? const Color(0xFF22252D) : const Color(0xFF15171C),
       contentTextStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
     ),

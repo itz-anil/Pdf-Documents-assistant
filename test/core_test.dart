@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:docmind/core/business_card.dart';
+import 'package:docmind/core/edge_detect.dart';
 import 'package:docmind/core/export_service.dart';
 import 'package:docmind/core/image_processing.dart';
 import 'package:docmind/core/library_store.dart';
@@ -52,7 +53,6 @@ void main() {
           thumb: th,
           filter: f,
           quarterTurns: 1,
-          crop: const [0, 0, 1, 1],
           brightness: 0,
           contrast: 1,
           maxSide: 2000,
@@ -70,17 +70,108 @@ void main() {
 
     test('book spreads split into two pages', () async {
       final l = p.join(tmp.path, 'l.jpg'), r = p.join(tmp.path, 'r.jpg');
-      await splitSpread(jpg, l, r);
+      await splitSpread(jpg, null, l, r);
       final li = img.decodeJpg(File(l).readAsBytesSync())!;
       expect(li.width, lessThan(200));
       expect(File(r).existsSync(), isTrue);
     });
 
-    test('ID card front and back land on one A4 page', () async {
+    test('ID card: front on top, back below, on one A4 page', () async {
+      String card(String name, img.Color c) {
+        final im = img.Image(width: 856, height: 540, numChannels: 3);
+        img.fill(im, color: c);
+        final path = p.join(tmp.path, name);
+        File(path).writeAsBytesSync(img.encodeJpg(im));
+        return path;
+      }
+
+      final front = card('front.jpg', img.ColorRgb8(220, 40, 40));
+      final back = card('back.jpg', img.ColorRgb8(40, 60, 220));
       final out = p.join(tmp.path, 'id.jpg');
-      await composeIdCard(jpg, jpg, out);
+      await composeIdCard(IdSide(front, null), IdSide(back, null), out);
       final im = img.decodeJpg(File(out).readAsBytesSync())!;
       expect([im.width, im.height], [2480, 3508]);
+      final top = im.getPixel(1240, 1100), bottom = im.getPixel(1240, 2450);
+      expect(top.r, greaterThan(180), reason: 'front (red) sits in the upper half');
+      expect(bottom.b, greaterThan(180), reason: 'back (blue) sits in the lower half');
+      // Large mode: the card spans most of the page width.
+      var left = 0;
+      while (im.getPixel(left, 1100).r > 200 && im.getPixel(left, 1100).g > 200) {
+        left++;
+      }
+      expect(2480 - 2 * left, greaterThan(1700));
+
+      final actual = p.join(tmp.path, 'id_actual.jpg');
+      await composeIdCard(IdSide(front, null), IdSide(back, null), actual, size: IdCardSize.actual);
+      final a = img.decodeJpg(File(actual).readAsBytesSync())!;
+      var x = 0;
+      while (a.getPixel(x, 400).r > 200 && a.getPixel(x, 400).g > 200) {
+        x++;
+      }
+      expect((2480 - 2 * x - 1011).abs(), lessThan(12), reason: '85.6 mm at 300 dpi');
+    });
+
+    test('a portrait-held card side can be rotated', () async {
+      final out = p.join(tmp.path, 'side.jpg');
+      await renderIdSide(IdSide(jpg, null, 1), out);
+      final im = img.decodeJpg(File(out).readAsBytesSync())!;
+      expect(im.width, greaterThan(im.height));
+    });
+  });
+
+  group('edge detection & perspective', () {
+    // A bright page photographed at an angle on a dark desk.
+    const corners = [130.0, 70.0, 540.0, 100.0, 575.0, 430.0, 95.0, 405.0];
+    late String photo;
+    setUpAll(() {
+      final im = img.Image(width: 640, height: 480, numChannels: 3);
+      img.fill(im, color: img.ColorRgb8(58, 52, 48));
+      img.fillPolygon(im,
+          vertices: [for (var i = 0; i < 4; i++) img.Point(corners[i * 2], corners[i * 2 + 1])],
+          color: img.ColorRgb8(232, 228, 218));
+      for (var y = 150; y < 360; y += 22) {
+        img.fillRect(im, x1: 190, y1: y, x2: 470, y2: y + 6, color: img.ColorRgb8(50, 50, 55));
+      }
+      photo = p.join(tmp.path, 'desk.jpg');
+      File(photo).writeAsBytesSync(img.encodeJpg(im, quality: 92));
+    });
+
+    test('finds the four page corners', () async {
+      final q = await detectQuadInFile(photo);
+      expect(q, isNotNull);
+      for (var i = 0; i < 4; i++) {
+        expect(q![i * 2], closeTo(corners[i * 2] / 640, 0.03), reason: 'corner $i x');
+        expect(q[i * 2 + 1], closeTo(corners[i * 2 + 1] / 480, 0.03), reason: 'corner $i y');
+      }
+    });
+
+    test('returns null when there is no page', () {
+      final flat = Uint8List(200 * 150)..fillRange(0, 200 * 150, 120);
+      expect(detectQuad(flat, 200, 150), isNull);
+      final paper = Uint8List(200 * 150)..fillRange(0, 200 * 150, 235);
+      expect(detectQuad(paper, 200, 150), isNull, reason: 'page fills the frame → keep whole image');
+    });
+
+    test('flattens the page and drops the desk', () async {
+      final q = (await detectQuadInFile(photo))!;
+      final out = p.join(tmp.path, 'flat.jpg');
+      final size = await buildBase(photo, q, out, 3000);
+      final im = img.decodeJpg(File(out).readAsBytesSync())!;
+      expect(size, [im.width, im.height]);
+      expect(im.width / im.height, closeTo(480 / 335, 0.06), reason: 'page proportions kept');
+      for (final (x, y) in [(4, 4), (im.width - 5, 4), (4, im.height - 5), (im.width - 5, im.height - 5)]) {
+        expect(im.getPixel(x, y).luminance, greaterThan(170), reason: 'corner ($x,$y) is paper, not desk');
+      }
+    });
+
+    test('quad rotation round-trips', () {
+      const q = [0.1, 0.2, 0.8, 0.15, 0.9, 0.85, 0.05, 0.9];
+      final back = rotateQuad(rotateQuad(q, 90), 270);
+      for (var i = 0; i < 8; i++) {
+        expect(back[i], closeTo(q[i], 1e-9));
+      }
+      expect(isFullQuad(fullQuad), isTrue);
+      expect(isFullQuad(q), isFalse);
     });
   });
 
@@ -178,5 +269,9 @@ void main() {
     final back = DocItem.fromJson(d.toJson());
     expect(back.pages.single.ocrLines.single.text, 'hi');
     expect(back.pages.single.filter, PageFilter.autoColor);
+    // Version 1 rectangle crops become four-corner outlines.
+    final v1 = PageItem.fromJson({'id': 'a', 'o': 'o', 'p': 'p', 'th': 't', 'c': [0.1, 0.2, 0.9, 0.8]});
+    expect(v1.quad, [0.1, 0.2, 0.9, 0.2, 0.9, 0.8, 0.1, 0.8]);
+    expect(v1.base, '');
   });
 }

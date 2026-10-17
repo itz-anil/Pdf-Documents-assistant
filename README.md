@@ -7,12 +7,16 @@ Nothing leaves the phone unless you share it.
 ## Features
 
 **Scan**
-- Camera scanning with automatic edge detection, auto-capture, crop and a
-  cleanup brush (Google's on-device document scanner)
+- One full-screen camera for every mode, with live page-edge detection,
+  auto-capture when the page is steady, flash and torch, tap to focus,
+  pinch to zoom, a grid, and gallery import
 - Modes: Document, Book (two-page spreads split into single pages), ID Card
-  (front and back on one A4 page), Business Card (saved as a contact),
-  Whiteboard, Receipt
-- Multi-page scans, adding pages later, importing photos and PDFs
+  (guided front then back, both on one A4 page at large or actual size),
+  Business Card (saved as a contact), Whiteboard, Receipt and QR Code
+- Four-corner crop with perspective correction, a magnifier loupe, and
+  auto-detect
+- Multi-page scans, adding pages later, retaking a page, importing photos
+  (edges found automatically) and PDFs
 
 **Edit**
 - Six filters (Original, Auto Color, Light Text, Grayscale, B&W, Whiteboard)
@@ -21,7 +25,7 @@ Nothing leaves the phone unless you share it.
 - Fill & Sign: saved signature, pen, highlighter, text, date, tick and cross
 
 **Text (OCR, on-device)**
-- English and Hindi (Devanagari) recognition
+- English text recognition
 - Searchable PDFs with an invisible text layer
 - Full-text search across every scan, with matches highlighted on the page
 - Copy or share the text, and smart file names taken from the first line
@@ -36,11 +40,12 @@ Nothing leaves the phone unless you share it.
 - **Protect PDF with a password (AES-256)** and **remove a PDF password**
 - PDF to JPG, images to PDF, import a PDF to edit and sign it
 - **Create a ZIP (optionally password-protected)** and extract a ZIP
-- QR and barcode scanner, text from image
+- QR and barcode scanning in the same camera, and text from an image
 
 **Privacy**
 - App Lock with fingerprint, face or screen lock
-- Light, dark and auto themes, five accent colours, and haptics
+- Light, dark and auto themes, five premium accents (Sapphire, Emerald,
+  Champagne, Ruby, Graphite), Manrope type, and haptics
 
 ## Build
 
@@ -74,5 +79,6 @@ lib/
 - Syncfusion Flutter PDF: PDF writing, merging and encryption (Community
   License, free for individuals)
 - pdfrx: PDF rendering
-- `image` (filters), `archive` (ZIP with AES), `mobile_scanner` (QR)
-- Phosphor Icons (MIT): fonts bundled in `assets/fonts`
+- `camera` (CameraX), and our own edge detection and perspective warp in Dart
+- `image` (filters), `archive` (ZIP with AES), ML Kit barcode scanning (QR)
+- Phosphor Icons (MIT) and Manrope (OFL): fonts bundled in `assets/fonts`

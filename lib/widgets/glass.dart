@@ -42,9 +42,10 @@ class _BlobPainter extends CustomPainter {
       canvas.drawCircle(c, r, paint);
     }
 
-    blob(Offset(size.width * 0.05, size.height * 0.05), size.width * 0.85, colors[0]);
-    blob(Offset(size.width * 1.0, size.height * 0.38), size.width * 0.75, colors[1]);
-    blob(Offset(size.width * 0.2, size.height * 0.95), size.width * 0.9, colors[2]);
+    // One soft accent glow at the top, a faint sheen, a quiet echo at the bottom.
+    blob(Offset(size.width * 0.15, -size.height * 0.02), size.width * 1.1, colors[0]);
+    blob(Offset(size.width * 0.95, size.height * 0.30), size.width * 0.6, colors[1]);
+    blob(Offset(size.width * 0.5, size.height * 1.05), size.width * 0.9, colors[2]);
   }
 
   @override
@@ -187,10 +188,10 @@ class IconBadge extends StatelessWidget {
                 end: Alignment.bottomRight,
               )
             : null,
-        color: filled ? null : base.withValues(alpha: g.dark ? 0.16 : 0.11),
-        border: Border.all(color: base.withValues(alpha: filled ? 0 : 0.18)),
+        color: filled ? null : base.withValues(alpha: g.dark ? 0.13 : 0.09),
+        border: Border.all(color: filled ? Colors.white.withValues(alpha: 0.14) : base.withValues(alpha: g.dark ? 0.16 : 0.12)),
         boxShadow: filled
-            ? [BoxShadow(color: base.withValues(alpha: 0.35), blurRadius: 16, offset: const Offset(0, 6))]
+            ? [BoxShadow(color: base.withValues(alpha: 0.28), blurRadius: 14, offset: const Offset(0, 5))]
             : null,
       ),
       alignment: Alignment.center,
@@ -492,7 +493,7 @@ Future<T?> showGlassSheet<T>(BuildContext context, {required WidgetBuilder build
             filter: ImageFilter.blur(sigmaX: 28, sigmaY: 28),
             child: Container(
               decoration: BoxDecoration(
-                color: g.dark ? const Color(0xFF141824).withValues(alpha: 0.88) : Colors.white.withValues(alpha: 0.9),
+                color: g.dark ? const Color(0xFF15171C).withValues(alpha: 0.9) : Colors.white.withValues(alpha: 0.94),
                 border: Border(top: BorderSide(color: g.border)),
               ),
               child: SafeArea(
