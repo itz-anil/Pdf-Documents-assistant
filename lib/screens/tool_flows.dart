@@ -49,7 +49,7 @@ class ToolFlows {
       options: const ['range', 'each'],
       label: (o) => o == 'range' ? 'Extract pages' : 'Split into single pages',
       subtitle: (o) => o == 'range' ? 'Pick pages like 1-3, 5' : '$count separate PDFs in a ZIP',
-      icon: (o) => o == 'range' ? PhosphorIconsDuotone.selection : PhosphorIconsDuotone.squareSplitHorizontal,
+      icon: (o) => o == 'range' ? PhosphorIconsRegular.selection : PhosphorIconsRegular.squareSplitHorizontal,
     );
     if (mode == null || !context.mounted) return;
     if (mode == 'range') {
@@ -106,9 +106,9 @@ class ToolFlows {
       label: (q) => q.label,
       subtitle: (q) => q.hint,
       icon: (q) => switch (q) {
-        ImageQuality.high => PhosphorIconsDuotone.sparkle,
-        ImageQuality.balanced => PhosphorIconsDuotone.scales,
-        ImageQuality.small => PhosphorIconsDuotone.arrowsInSimple,
+        ImageQuality.high => PhosphorIconsRegular.sparkle,
+        ImageQuality.balanced => PhosphorIconsRegular.scales,
+        ImageQuality.small => PhosphorIconsRegular.arrowsInSimple,
       },
     );
     if (level == null || !context.mounted) return;
@@ -251,7 +251,7 @@ class ToolFlows {
       options: const [false, true],
       label: (b) => b ? 'Password-protected ZIP' : 'Regular ZIP',
       subtitle: (b) => b ? 'AES encrypted, needs a password to open' : 'Opens anywhere',
-      icon: (b) => b ? PhosphorIconsDuotone.lockKey : PhosphorIconsDuotone.fileZip,
+      icon: (b) => b ? PhosphorIconsRegular.lockKey : PhosphorIconsRegular.fileZip,
     );
     if (protect == null || !context.mounted) return;
     String? pw;
@@ -361,7 +361,7 @@ class ToolFlows {
                   Expanded(
                     child: GlassButton(
                       label: 'Copy',
-                      icon: PhosphorIconsDuotone.copy,
+                      icon: PhosphorIconsRegular.copy,
                       onTap: text.isEmpty
                           ? null
                           : () {
@@ -374,7 +374,7 @@ class ToolFlows {
                   Expanded(
                     child: GradientButton(
                       label: 'Share',
-                      icon: PhosphorIconsDuotone.shareNetwork,
+                      icon: PhosphorIconsRegular.shareNetwork,
                       onTap: text.isEmpty ? null : () => ExportService.shareText(text),
                     ),
                   ),
@@ -463,10 +463,10 @@ class _MergeScreenState extends State<MergeScreen> {
                 child: _files.isEmpty
                     ? Center(
                         child: EmptyState(
-                          icon: PhosphorIconsDuotone.unite,
+                          icon: PhosphorIconsRegular.unite,
                           title: 'Add PDFs to merge',
                           message: 'Choose two or more PDFs. Password-protected files will ask for their password.',
-                          action: GradientButton(label: 'Choose PDFs', icon: PhosphorIconsDuotone.filePlus, onTap: _add),
+                          action: GradientButton(label: 'Choose PDFs', icon: PhosphorIconsRegular.filePlus, onTap: _add),
                         ),
                       )
                     : ReorderableListView.builder(
@@ -484,7 +484,7 @@ class _MergeScreenState extends State<MergeScreen> {
                               padding: const EdgeInsets.fromLTRB(12, 10, 4, 10),
                               child: Row(
                                 children: [
-                                  IconBadge(PhosphorIconsDuotone.filePdf, size: 44),
+                                  IconBadge(PhosphorIconsRegular.filePdf, size: 44),
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Column(
@@ -507,7 +507,7 @@ class _MergeScreenState extends State<MergeScreen> {
                                       _files.remove(f);
                                       _pages.remove(f);
                                     }),
-                                    icon: PhosphorIcon(PhosphorIconsDuotone.xCircle, color: g.muted),
+                                    icon: PhosphorIcon(PhosphorIconsRegular.xCircle, color: g.muted),
                                   ),
                                   ReorderableDragStartListener(
                                     index: i,
@@ -527,7 +527,7 @@ class _MergeScreenState extends State<MergeScreen> {
                 padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
                 child: GradientButton(
                   label: _files.length < 2 ? 'Add at least 2 PDFs' : 'Merge ${_files.length} PDFs',
-                  icon: PhosphorIconsDuotone.unite,
+                  icon: PhosphorIconsRegular.unite,
                   expand: true,
                   onTap: _files.length < 2 ? null : _merge,
                 ),

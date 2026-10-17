@@ -36,12 +36,12 @@ extension ScanModeInfo on ScanMode {
       };
 
   IconData get icon => switch (this) {
-        ScanMode.document => PhosphorIconsDuotone.fileText,
-        ScanMode.book => PhosphorIconsDuotone.bookOpen,
-        ScanMode.idCard => PhosphorIconsDuotone.identificationCard,
-        ScanMode.businessCard => PhosphorIconsDuotone.addressBook,
-        ScanMode.whiteboard => PhosphorIconsDuotone.chalkboard,
-        ScanMode.receipt => PhosphorIconsDuotone.receipt,
+        ScanMode.document => PhosphorIconsRegular.fileText,
+        ScanMode.book => PhosphorIconsRegular.bookOpen,
+        ScanMode.idCard => PhosphorIconsRegular.identificationCard,
+        ScanMode.businessCard => PhosphorIconsRegular.addressBook,
+        ScanMode.whiteboard => PhosphorIconsRegular.chalkboard,
+        ScanMode.receipt => PhosphorIconsRegular.receipt,
       };
 
   PageFilter? get preferredFilter => switch (this) {

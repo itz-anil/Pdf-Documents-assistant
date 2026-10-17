@@ -106,7 +106,7 @@ class _BusinessCardScreenState extends State<BusinessCardScreen> {
                 subtitle: 'Check the details, then save',
                 actions: [
                   GlassIconButton(
-                    icon: PhosphorIconsDuotone.fileText,
+                    icon: PhosphorIconsRegular.fileText,
                     tooltip: 'Open scan',
                     onTap: () => Navigator.of(context)
                         .pushReplacement(MaterialPageRoute(builder: (_) => DocumentScreen(doc: widget.doc))),
@@ -134,13 +134,13 @@ class _BusinessCardScreenState extends State<BusinessCardScreen> {
                       padding: const EdgeInsets.fromLTRB(14, 16, 14, 4),
                       child: Column(
                         children: [
-                          field('name', 'Name', PhosphorIconsDuotone.user),
-                          field('title', 'Job title', PhosphorIconsDuotone.briefcase),
-                          field('company', 'Company', PhosphorIconsDuotone.buildings),
-                          field('phone', 'Phone (comma separated)', PhosphorIconsDuotone.phone, type: TextInputType.phone),
-                          field('email', 'Email', PhosphorIconsDuotone.envelopeSimple, type: TextInputType.emailAddress),
-                          field('web', 'Website', PhosphorIconsDuotone.globe, type: TextInputType.url),
-                          field('address', 'Address', PhosphorIconsDuotone.mapPin),
+                          field('name', 'Name', PhosphorIconsRegular.user),
+                          field('title', 'Job title', PhosphorIconsRegular.briefcase),
+                          field('company', 'Company', PhosphorIconsRegular.buildings),
+                          field('phone', 'Phone (comma separated)', PhosphorIconsRegular.phone, type: TextInputType.phone),
+                          field('email', 'Email', PhosphorIconsRegular.envelopeSimple, type: TextInputType.emailAddress),
+                          field('web', 'Website', PhosphorIconsRegular.globe, type: TextInputType.url),
+                          field('address', 'Address', PhosphorIconsRegular.mapPin),
                         ],
                       ),
                     ),
@@ -159,7 +159,7 @@ class _BusinessCardScreenState extends State<BusinessCardScreen> {
                   children: [
                     GradientButton(
                       label: 'Save to Contacts',
-                      icon: PhosphorIconsDuotone.userPlus,
+                      icon: PhosphorIconsRegular.userPlus,
                       expand: true,
                       onTap: () async {
                         final f = await _writeVcf();
@@ -173,7 +173,7 @@ class _BusinessCardScreenState extends State<BusinessCardScreen> {
                         Expanded(
                           child: GlassButton(
                             label: 'Share vCard',
-                            icon: PhosphorIconsDuotone.shareNetwork,
+                            icon: PhosphorIconsRegular.shareNetwork,
                             onTap: () async => ExportService.share([(await _writeVcf()).path]),
                           ),
                         ),
@@ -181,7 +181,7 @@ class _BusinessCardScreenState extends State<BusinessCardScreen> {
                         Expanded(
                           child: GlassButton(
                             label: 'Copy',
-                            icon: PhosphorIconsDuotone.copy,
+                            icon: PhosphorIconsRegular.copy,
                             onTap: () {
                               final c = _current();
                               final text = [

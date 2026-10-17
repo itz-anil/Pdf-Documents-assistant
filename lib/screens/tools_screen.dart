@@ -23,35 +23,35 @@ class ToolsScreen extends StatelessWidget {
     (
       'PDF tools',
       [
-        _Tool(PhosphorIconsDuotone.unite, 'Merge PDFs', 'Join files in any order', ToolFlows.merge),
-        _Tool(PhosphorIconsDuotone.scissors, 'Split PDF', 'Extract or separate pages', ToolFlows.split),
-        _Tool(PhosphorIconsDuotone.arrowsInSimple, 'Compress PDF', 'Shrink large files', ToolFlows.compress),
-        _Tool(PhosphorIconsDuotone.lockKey, 'Protect PDF', 'Add a password', ToolFlows.protect),
-        _Tool(PhosphorIconsDuotone.lockKeyOpen, 'Remove password', 'Unlock a PDF you own', ToolFlows.removePassword),
-        _Tool(PhosphorIconsDuotone.fileImage, 'PDF to JPG', 'Every page as an image', ToolFlows.pdfToImages),
-        _Tool(PhosphorIconsDuotone.filePdf, 'Images to PDF', 'Photos into one PDF', ToolFlows.imagesToPdf),
-        _Tool(PhosphorIconsDuotone.fileArrowDown, 'Import PDF', 'Edit & sign it in DocMind', (c) => ScanFlow.importPdf(c)),
+        _Tool(PhosphorIconsRegular.unite, 'Merge PDFs', 'Join files in any order', ToolFlows.merge),
+        _Tool(PhosphorIconsRegular.scissors, 'Split PDF', 'Extract or separate pages', ToolFlows.split),
+        _Tool(PhosphorIconsRegular.arrowsInSimple, 'Compress PDF', 'Shrink large files', ToolFlows.compress),
+        _Tool(PhosphorIconsRegular.lockKey, 'Protect PDF', 'Add a password', ToolFlows.protect),
+        _Tool(PhosphorIconsRegular.lockKeyOpen, 'Remove password', 'Unlock a PDF you own', ToolFlows.removePassword),
+        _Tool(PhosphorIconsRegular.fileImage, 'PDF to JPG', 'Every page as an image', ToolFlows.pdfToImages),
+        _Tool(PhosphorIconsRegular.filePdf, 'Images to PDF', 'Photos into one PDF', ToolFlows.imagesToPdf),
+        _Tool(PhosphorIconsRegular.fileArrowDown, 'Import PDF', 'Edit & sign it in DocMind', (c) => ScanFlow.importPdf(c)),
       ]
     ),
     (
       'Archive',
       [
-        _Tool(PhosphorIconsDuotone.fileZip, 'Create ZIP', 'Bundle any files, optional password', ToolFlows.createZip),
-        _Tool(PhosphorIconsDuotone.folderOpen, 'Extract ZIP', 'Open ZIP archives', ToolFlows.extractZip),
+        _Tool(PhosphorIconsRegular.fileZip, 'Create ZIP', 'Bundle any files, optional password', ToolFlows.createZip),
+        _Tool(PhosphorIconsRegular.folderOpen, 'Extract ZIP', 'Open ZIP archives', ToolFlows.extractZip),
       ]
     ),
     (
       'Scan & recognise',
       [
-        _Tool(PhosphorIconsDuotone.qrCode, 'QR & Barcode', 'Scan codes instantly',
+        _Tool(PhosphorIconsRegular.qrCode, 'QR & Barcode', 'Scan codes instantly',
             ScanFlow.openQr),
-        _Tool(PhosphorIconsDuotone.textAa, 'Text from image', 'Copy text from photos', ToolFlows.textFromImage),
-        _Tool(PhosphorIconsDuotone.identificationCard, 'ID Card', 'Front & back on one page',
+        _Tool(PhosphorIconsRegular.textAa, 'Text from image', 'Copy text from photos', ToolFlows.textFromImage),
+        _Tool(PhosphorIconsRegular.identificationCard, 'ID Card', 'Front & back on one page',
             (c) => ScanFlow.scan(c, ScanMode.idCard)),
-        _Tool(PhosphorIconsDuotone.addressBook, 'Business card', 'Save as a contact',
+        _Tool(PhosphorIconsRegular.addressBook, 'Business card', 'Save as a contact',
             (c) => ScanFlow.scan(c, ScanMode.businessCard)),
-        _Tool(PhosphorIconsDuotone.bookOpen, 'Book', 'Split two-page spreads', (c) => ScanFlow.scan(c, ScanMode.book)),
-        _Tool(PhosphorIconsDuotone.chalkboard, 'Whiteboard', 'Clean, vivid boards',
+        _Tool(PhosphorIconsRegular.bookOpen, 'Book', 'Split two-page spreads', (c) => ScanFlow.scan(c, ScanMode.book)),
+        _Tool(PhosphorIconsRegular.chalkboard, 'Whiteboard', 'Clean, vivid boards',
             (c) => ScanFlow.scan(c, ScanMode.whiteboard)),
       ]
     ),

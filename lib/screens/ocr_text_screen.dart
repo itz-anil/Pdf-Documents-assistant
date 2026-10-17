@@ -31,7 +31,7 @@ class OcrTextScreen extends StatelessWidget {
                 subtitle: pending ? 'Recognising text…' : 'Recognised on this device',
                 actions: [
                   GlassIconButton(
-                    icon: PhosphorIconsDuotone.copy,
+                    icon: PhosphorIconsRegular.copy,
                     tooltip: 'Copy all',
                     onTap: doc.fullText.isEmpty
                         ? null
@@ -41,7 +41,7 @@ class OcrTextScreen extends StatelessWidget {
                           },
                   ),
                   GlassIconButton(
-                    icon: PhosphorIconsDuotone.shareNetwork,
+                    icon: PhosphorIconsRegular.shareNetwork,
                     tooltip: 'Share text',
                     onTap: doc.fullText.isEmpty ? null : () => ExportService.shareText(doc.fullText, subject: doc.name),
                   ),
@@ -57,7 +57,7 @@ class OcrTextScreen extends StatelessWidget {
                         padding: const EdgeInsets.only(top: 10),
                         child: GlassButton(
                           label: 'Re-run text recognition',
-                          icon: PhosphorIconsDuotone.arrowsClockwise,
+                          icon: PhosphorIconsRegular.arrowsClockwise,
                           expand: true,
                           onTap: pending
                               ? null
@@ -89,7 +89,7 @@ class OcrTextScreen extends StatelessWidget {
                                       Clipboard.setData(ClipboardData(text: pg.ocrText));
                                       toast(context, 'Page ${i + 1} copied');
                                     },
-                                    icon: PhosphorIcon(PhosphorIconsDuotone.copySimple, color: g.muted, size: 20),
+                                    icon: PhosphorIcon(PhosphorIconsRegular.copySimple, color: g.muted, size: 20),
                                   ),
                               ],
                             ),

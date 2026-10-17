@@ -110,7 +110,7 @@ class _LockScreen extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                IconBadge(PhosphorIconsDuotone.lockKey, filled: true, size: 88),
+                IconBadge(PhosphorIconsRegular.lockKey, filled: true, size: 88),
                 const SizedBox(height: 26),
                 Text('DocMind is locked',
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: g.text)),
@@ -124,7 +124,7 @@ class _LockScreen extends StatelessWidget {
                 const SizedBox(height: 30),
                 GradientButton(
                   label: busy ? 'Waiting…' : 'Unlock',
-                  icon: PhosphorIconsDuotone.fingerprint,
+                  icon: PhosphorIconsRegular.fingerprint,
                   onTap: busy ? null : onUnlock,
                 ),
               ],

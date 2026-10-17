@@ -138,12 +138,12 @@ class _AnnotateScreenState extends State<AnnotateScreen> {
                 ),
                 const SizedBox(height: 8),
                 GlassTile(
-                  icon: PhosphorIconsDuotone.signature,
+                  icon: PhosphorIconsRegular.signature,
                   title: 'Use saved signature',
                   onTap: () => Navigator.pop(ctx, 'saved'),
                 ),
                 GlassTile(
-                  icon: PhosphorIconsDuotone.pencilLine,
+                  icon: PhosphorIconsRegular.pencilLine,
                   title: 'Draw a new signature',
                   onTap: () => Navigator.pop(ctx, 'new'),
                 ),
@@ -229,7 +229,7 @@ class _AnnotateScreenState extends State<AnnotateScreen> {
                   subtitle: 'Markup is merged into the page',
                   actions: [
                     GlassIconButton(
-                      icon: PhosphorIconsDuotone.arrowCounterClockwise,
+                      icon: PhosphorIconsRegular.arrowCounterClockwise,
                       tooltip: 'Undo',
                       onTap: _history.isEmpty ? null : _undo,
                     ),
@@ -434,18 +434,18 @@ class _AnnotateScreenState extends State<AnnotateScreen> {
           IconButton(
             tooltip: 'Smaller',
             onPressed: () => setState(() => s.scale = (s.scale / 1.15).clamp(0.3, 6.0)),
-            icon: PhosphorIcon(PhosphorIconsDuotone.minusCircle, color: g.text),
+            icon: PhosphorIcon(PhosphorIconsRegular.minusCircle, color: g.text),
           ),
           IconButton(
             tooltip: 'Bigger',
             onPressed: () => setState(() => s.scale = (s.scale * 1.15).clamp(0.3, 6.0)),
-            icon: PhosphorIcon(PhosphorIconsDuotone.plusCircle, color: g.text),
+            icon: PhosphorIcon(PhosphorIconsRegular.plusCircle, color: g.text),
           ),
           if (s.kind != _StampKind.signature)
             IconButton(
               tooltip: 'Use current colour',
               onPressed: () => setState(() => s.color = _color),
-              icon: PhosphorIcon(PhosphorIconsDuotone.paintBucket, color: _color),
+              icon: PhosphorIcon(PhosphorIconsRegular.paintBucket, color: _color),
             ),
           if (s.kind == _StampKind.text)
             IconButton(
@@ -454,7 +454,7 @@ class _AnnotateScreenState extends State<AnnotateScreen> {
                 final t = await promptText(context, title: 'Edit text', initial: s.text);
                 if (t != null && t.trim().isNotEmpty) setState(() => s.text = t.trim());
               },
-              icon: PhosphorIcon(PhosphorIconsDuotone.pencilSimpleLine, color: g.text),
+              icon: PhosphorIcon(PhosphorIconsRegular.pencilSimpleLine, color: g.text),
             ),
           IconButton(
             tooltip: 'Remove',
@@ -463,7 +463,7 @@ class _AnnotateScreenState extends State<AnnotateScreen> {
               _history.remove(s);
               _selected = null;
             }),
-            icon: PhosphorIcon(PhosphorIconsDuotone.trash, color: g.danger),
+            icon: PhosphorIcon(PhosphorIconsRegular.trash, color: g.danger),
           ),
         ],
       ),
@@ -514,18 +514,18 @@ class _AnnotateScreenState extends State<AnnotateScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 8),
         child: Row(
           children: [
-            tool(PhosphorIconsDuotone.handGrabbing, 'Move', () => setState(() => _tool = _Tool.move),
+            tool(PhosphorIconsRegular.handGrabbing, 'Move', () => setState(() => _tool = _Tool.move),
                 active: _tool == _Tool.move),
-            tool(PhosphorIconsDuotone.pen, 'Pen', () => setState(() => _tool = _Tool.pen), active: _tool == _Tool.pen),
-            tool(PhosphorIconsDuotone.highlighter, 'Highlight', () => setState(() => _tool = _Tool.highlighter),
+            tool(PhosphorIconsRegular.pen, 'Pen', () => setState(() => _tool = _Tool.pen), active: _tool == _Tool.pen),
+            tool(PhosphorIconsRegular.highlighter, 'Highlight', () => setState(() => _tool = _Tool.highlighter),
                 active: _tool == _Tool.highlighter),
-            tool(PhosphorIconsDuotone.signature, 'Sign', _addSignature),
-            tool(PhosphorIconsDuotone.textT, 'Text', _addText),
-            tool(PhosphorIconsDuotone.calendarCheck, 'Date',
+            tool(PhosphorIconsRegular.signature, 'Sign', _addSignature),
+            tool(PhosphorIconsRegular.textT, 'Text', _addText),
+            tool(PhosphorIconsRegular.calendarCheck, 'Date',
                 () => _addText(preset: DateFormat('d MMM yyyy').format(DateTime.now()))),
-            tool(PhosphorIconsDuotone.checkSquare, 'Tick',
+            tool(PhosphorIconsRegular.checkSquare, 'Tick',
                 () => _addStamp(_Stamp(_StampKind.check, center: const Offset(0.5, 0.5), color: _color))),
-            tool(PhosphorIconsDuotone.xSquare, 'Cross',
+            tool(PhosphorIconsRegular.xSquare, 'Cross',
                 () => _addStamp(_Stamp(_StampKind.cross, center: const Offset(0.5, 0.5), color: _color))),
           ],
         ),

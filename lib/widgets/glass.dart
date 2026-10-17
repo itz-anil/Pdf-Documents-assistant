@@ -160,11 +160,12 @@ class AppIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     final g = Glass.of(context);
     final c = color ?? g.text;
-    return PhosphorIcon(icon, size: size, color: c, duotoneSecondaryOpacity: 0.28);
+    return PhosphorIcon(icon, size: size, color: c);
   }
 }
 
-/// Rounded square with gradient fill holding an icon — the "premium" tile.
+/// Icon tile. Neutral by default (icon in the text colour on a quiet
+/// surface); [filled] uses the solid accent. No coloured shadows.
 class IconBadge extends StatelessWidget {
   final IconData icon;
   final double size;
@@ -175,33 +176,18 @@ class IconBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final g = Glass.of(context);
-    final base = tint ?? g.accent.primary;
+    final bg = filled ? (tint ?? g.accent.primary) : g.faint;
+    final fg = filled ? (tint == null ? g.onAccent : Colors.white) : (tint ?? g.text);
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(size * 0.32),
-        gradient: filled
-            ? LinearGradient(
-                colors: [base, tint == null ? g.accent.secondary : base.withValues(alpha: 0.75)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              )
-            : null,
-        color: filled ? null : base.withValues(alpha: g.dark ? 0.13 : 0.09),
-        border: Border.all(color: filled ? Colors.white.withValues(alpha: 0.14) : base.withValues(alpha: g.dark ? 0.16 : 0.12)),
-        boxShadow: filled
-            ? [BoxShadow(color: base.withValues(alpha: 0.28), blurRadius: 14, offset: const Offset(0, 5))]
-            : null,
+        borderRadius: BorderRadius.circular(size * 0.3),
+        color: bg,
+        border: filled ? null : Border.all(color: g.border),
       ),
       alignment: Alignment.center,
-      child: PhosphorIcon(
-        icon,
-        size: size * 0.5,
-        color: filled ? Colors.white : base,
-        duotoneSecondaryOpacity: filled ? 0.4 : 0.3,
-        duotoneSecondaryColor: filled ? Colors.white : null,
-      ),
+      child: PhosphorIcon(icon, size: size * 0.46, color: fg),
     );
   }
 }
@@ -283,26 +269,19 @@ class GradientButton extends StatelessWidget {
             width: expand ? double.infinity : null,
             padding: const EdgeInsets.symmetric(horizontal: 22),
             decoration: BoxDecoration(
-              gradient: g.accent.gradient,
+              color: g.accent.primary,
               borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: g.accent.primary.withValues(alpha: 0.35),
-                  blurRadius: 18,
-                  offset: const Offset(0, 8),
-                ),
-              ],
             ),
             child: Row(
               mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 if (icon != null) ...[
-                  PhosphorIcon(icon!, color: Colors.white, size: 20, duotoneSecondaryColor: Colors.white),
+                  PhosphorIcon(icon!, color: g.onAccent, size: 20),
                   const SizedBox(width: 8),
                 ],
                 Text(label,
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15)),
+                    style: TextStyle(color: g.onAccent, fontWeight: FontWeight.w700, fontSize: 15)),
               ],
             ),
           ),
@@ -451,8 +430,7 @@ class GlassChip extends StatelessWidget {
         height: 38,
         padding: const EdgeInsets.symmetric(horizontal: 14),
         decoration: BoxDecoration(
-          gradient: selected ? g.accent.gradient : null,
-          color: selected ? null : g.fill,
+          color: selected ? g.accent.primary : g.fill,
           borderRadius: BorderRadius.circular(19),
           border: Border.all(color: selected ? Colors.transparent : g.border),
         ),
@@ -460,14 +438,14 @@ class GlassChip extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[
-              AppIcon(icon!, size: 16, color: selected ? Colors.white : g.muted),
+              AppIcon(icon!, size: 16, color: selected ? g.onAccent : g.muted),
               const SizedBox(width: 6),
             ],
             Text(label,
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: selected ? Colors.white : g.text,
+                  color: selected ? g.onAccent : g.text,
                 )),
           ],
         ),
@@ -493,7 +471,7 @@ Future<T?> showGlassSheet<T>(BuildContext context, {required WidgetBuilder build
             filter: ImageFilter.blur(sigmaX: 28, sigmaY: 28),
             child: Container(
               decoration: BoxDecoration(
-                color: g.dark ? const Color(0xFF15171C).withValues(alpha: 0.9) : Colors.white.withValues(alpha: 0.94),
+                color: g.dark ? const Color(0xFF18181B).withValues(alpha: 0.94) : Colors.white.withValues(alpha: 0.97),
                 border: Border(top: BorderSide(color: g.border)),
               ),
               child: SafeArea(

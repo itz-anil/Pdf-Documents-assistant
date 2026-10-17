@@ -1,9 +1,8 @@
 import 'dart:io';
 import 'dart:isolate';
-import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:flutter/services.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path/path.dart' as p;
 import 'package:printing/printing.dart';
@@ -47,16 +46,38 @@ class ExportService {
     await SharePlus.instance.share(ShareParams(text: text, subject: subject));
   }
 
-  /// Lets the user pick a destination (Downloads, Drive…). Returns false if cancelled.
-  static Future<bool> saveToDevice(String path, {String? fileName}) async {
-    final bytes = await File(path).readAsBytes();
-    final uri = await FilePicker.saveFile(
-      fileName: fileName ?? p.basename(path),
-      bytes: bytes,
-      mimeType: mimeFor(path),
-      dialogTitle: 'Save to device',
-    );
-    return uri != null;
+  static const _storage = MethodChannel('docmind/storage');
+
+  /// Saves a copy into the phone's public storage: PDFs, ZIPs and text go to
+  /// Downloads/DocMind, images to Pictures/DocMind (visible in Gallery).
+  /// Returns where the file was saved.
+  static Future<String> saveToDevice(String path, {String? fileName}) async {
+    final name = fileName ?? p.basename(path);
+    if (!Platform.isAndroid) {
+      await share([path]);
+      return name;
+    }
+    try {
+      final where = await _storage.invokeMethod<String>('saveToPublic', {
+        'path': path,
+        'name': name,
+        'mime': mimeFor(path),
+      });
+      return where ?? name;
+    } on PlatformException catch (e) {
+      throw Exception(e.code == 'permission'
+          ? 'Allow storage access to save files to Downloads'
+          : (e.message ?? 'Could not save the file'));
+    }
+  }
+
+  /// Saves several files; returns the folder they went to.
+  static Future<String> saveAllToDevice(List<String> paths) async {
+    var where = '';
+    for (final x in paths) {
+      where = await saveToDevice(x);
+    }
+    return p.dirname(where);
   }
 
   static Future<void> printPdf(Uint8List bytes, String name) =>

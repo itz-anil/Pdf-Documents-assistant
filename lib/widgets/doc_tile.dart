@@ -125,11 +125,10 @@ class _SelectMark extends StatelessWidget {
       height: 26,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: selected ? g.accent.gradient : null,
-        color: selected ? null : g.fill,
-        border: Border.all(color: selected ? Colors.transparent : g.muted.withValues(alpha: 0.6), width: 1.5),
+        color: selected ? g.accent.primary : g.fill,
+                border: Border.all(color: selected ? Colors.transparent : g.muted.withValues(alpha: 0.6), width: 1.5),
       ),
-      child: selected ? const Icon(Icons.check_rounded, size: 17, color: Colors.white) : null,
+      child: selected ? Icon(Icons.check_rounded, size: 17, color: g.onAccent) : null,
     );
   }
 }

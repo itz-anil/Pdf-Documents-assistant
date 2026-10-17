@@ -31,7 +31,7 @@ class _ResultSheet extends StatelessWidget {
         children: [
           Row(
             children: [
-              IconBadge(isLink ? PhosphorIconsDuotone.link : PhosphorIconsDuotone.qrCode, filled: true, size: 48),
+              IconBadge(isLink ? PhosphorIconsRegular.link : PhosphorIconsRegular.qrCode, filled: true, size: 48),
               const SizedBox(width: 12),
               Text(isLink ? 'Link found' : 'Code found',
                   style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800, color: g.text)),
@@ -48,7 +48,7 @@ class _ResultSheet extends StatelessWidget {
           if (isLink || isSpecial) ...[
             GradientButton(
               label: isLink ? 'Open link' : 'Open',
-              icon: PhosphorIconsDuotone.arrowSquareOut,
+              icon: PhosphorIconsRegular.arrowSquareOut,
               expand: true,
               onTap: () => launchUrl(uri, mode: LaunchMode.externalApplication),
             ),
@@ -59,7 +59,7 @@ class _ResultSheet extends StatelessWidget {
               Expanded(
                 child: GlassButton(
                   label: 'Copy',
-                  icon: PhosphorIconsDuotone.copy,
+                  icon: PhosphorIconsRegular.copy,
                   onTap: () {
                     Clipboard.setData(ClipboardData(text: value));
                     toast(context, 'Copied');
@@ -70,7 +70,7 @@ class _ResultSheet extends StatelessWidget {
               Expanded(
                 child: GlassButton(
                   label: 'Share',
-                  icon: PhosphorIconsDuotone.shareNetwork,
+                  icon: PhosphorIconsRegular.shareNetwork,
                   onTap: () => ExportService.shareText(value),
                 ),
               ),

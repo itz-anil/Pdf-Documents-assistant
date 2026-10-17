@@ -133,22 +133,22 @@ class _HomeScreenState extends State<HomeScreen> {
                         label: (o) => o.label,
                         selected: settings.sort,
                         icon: (o) => switch (o) {
-                          SortOrder.newest => PhosphorIconsDuotone.sortDescending,
-                          SortOrder.oldest => PhosphorIconsDuotone.sortAscending,
-                          SortOrder.nameAZ => PhosphorIconsDuotone.textAa,
-                          SortOrder.nameZA => PhosphorIconsDuotone.textAa,
-                          SortOrder.largest => PhosphorIconsDuotone.stack,
+                          SortOrder.newest => PhosphorIconsRegular.sortDescending,
+                          SortOrder.oldest => PhosphorIconsRegular.sortAscending,
+                          SortOrder.nameAZ => PhosphorIconsRegular.textAa,
+                          SortOrder.nameZA => PhosphorIconsRegular.textAa,
+                          SortOrder.largest => PhosphorIconsRegular.stack,
                         },
                       );
                       if (s != null) settings.setSort = s;
                     },
-                    icon: PhosphorIcon(PhosphorIconsDuotone.sortAscending, color: g.text),
+                    icon: PhosphorIcon(PhosphorIconsRegular.sortAscending, color: g.text),
                   ),
                   IconButton(
                     tooltip: settings.gridView ? 'List view' : 'Grid view',
                     onPressed: () => settings.setGridView = !settings.gridView,
                     icon: PhosphorIcon(
-                      settings.gridView ? PhosphorIconsDuotone.listBullets : PhosphorIconsDuotone.squaresFour,
+                      settings.gridView ? PhosphorIconsRegular.listBullets : PhosphorIconsRegular.squaresFour,
                       color: g.text,
                     ),
                   ),
@@ -161,7 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
           else if (docs.isEmpty)
             SliverToBoxAdapter(
               child: EmptyState(
-                icon: _folder == _favorites ? PhosphorIconsDuotone.star : PhosphorIconsDuotone.scan,
+                icon: _folder == _favorites ? PhosphorIconsRegular.star : PhosphorIconsRegular.scan,
                 title: _folder == _favorites
                     ? 'No favourites yet'
                     : _folder != null
@@ -174,7 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ? null
                     : GradientButton(
                         label: 'Scan a document',
-                        icon: PhosphorIconsDuotone.scan,
+                        icon: PhosphorIconsRegular.scan,
                         onTap: () => ScanFlow.chooseAndScan(context, folderId: _folder),
                       ),
               ),
@@ -256,14 +256,11 @@ class _Header extends StatelessWidget {
                 width: 42,
                 height: 42,
                 decoration: BoxDecoration(
-                  gradient: g.accent.gradient,
+                  color: g.accent.primary,
                   borderRadius: BorderRadius.circular(13),
-                  boxShadow: [
-                    BoxShadow(color: g.accent.primary.withValues(alpha: 0.4), blurRadius: 14, offset: const Offset(0, 5)),
-                  ],
                 ),
                 alignment: Alignment.center,
-                child: const PhosphorIcon(PhosphorIconsBold.scan, color: Colors.white, size: 23),
+                child: PhosphorIcon(PhosphorIconsBold.scan, color: g.onAccent, size: 22),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -336,10 +333,10 @@ class _SelectionBar extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _BarAction(icon: PhosphorIconsDuotone.fileZip, label: 'ZIP', onTap: onShare),
-                _BarAction(icon: PhosphorIconsDuotone.unite, label: 'Merge', onTap: onMerge),
-                _BarAction(icon: PhosphorIconsDuotone.folderSimple, label: 'Move', onTap: onMove),
-                _BarAction(icon: PhosphorIconsDuotone.trash, label: 'Delete', onTap: onDelete, danger: true),
+                _BarAction(icon: PhosphorIconsRegular.fileZip, label: 'ZIP', onTap: onShare),
+                _BarAction(icon: PhosphorIconsRegular.unite, label: 'Merge', onTap: onMerge),
+                _BarAction(icon: PhosphorIconsRegular.folderSimple, label: 'Move', onTap: onMove),
+                _BarAction(icon: PhosphorIconsRegular.trash, label: 'Delete', onTap: onDelete, danger: true),
               ],
             ),
           ],
@@ -393,15 +390,15 @@ class _QuickActions extends StatelessWidget {
   Widget build(BuildContext context) {
     final g = Glass.of(context);
     final items = <(IconData, String, Future<void> Function())>[
-      (PhosphorIconsDuotone.fileText, 'Document', () => ScanFlow.scan(context, ScanMode.document, folderId: folderId)),
-      (PhosphorIconsDuotone.identificationCard, 'ID Card', () => ScanFlow.scan(context, ScanMode.idCard, folderId: folderId)),
-      (PhosphorIconsDuotone.bookOpen, 'Book', () => ScanFlow.scan(context, ScanMode.book, folderId: folderId)),
-      (PhosphorIconsDuotone.addressBook, 'Card', () => ScanFlow.scan(context, ScanMode.businessCard, folderId: folderId)),
-      (PhosphorIconsDuotone.receipt, 'Receipt', () => ScanFlow.scan(context, ScanMode.receipt, folderId: folderId)),
-      (PhosphorIconsDuotone.chalkboard, 'Board', () => ScanFlow.scan(context, ScanMode.whiteboard, folderId: folderId)),
-      (PhosphorIconsDuotone.qrCode, 'QR Code', () => ScanFlow.openQr(context)),
-      (PhosphorIconsDuotone.images, 'Photos', () => ScanFlow.importPhotos(context, folderId: folderId)),
-      (PhosphorIconsDuotone.filePdf, 'PDF', () => ScanFlow.importPdf(context, folderId: folderId)),
+      (PhosphorIconsRegular.fileText, 'Document', () => ScanFlow.scan(context, ScanMode.document, folderId: folderId)),
+      (PhosphorIconsRegular.identificationCard, 'ID Card', () => ScanFlow.scan(context, ScanMode.idCard, folderId: folderId)),
+      (PhosphorIconsRegular.bookOpen, 'Book', () => ScanFlow.scan(context, ScanMode.book, folderId: folderId)),
+      (PhosphorIconsRegular.addressBook, 'Card', () => ScanFlow.scan(context, ScanMode.businessCard, folderId: folderId)),
+      (PhosphorIconsRegular.receipt, 'Receipt', () => ScanFlow.scan(context, ScanMode.receipt, folderId: folderId)),
+      (PhosphorIconsRegular.chalkboard, 'Board', () => ScanFlow.scan(context, ScanMode.whiteboard, folderId: folderId)),
+      (PhosphorIconsRegular.qrCode, 'QR Code', () => ScanFlow.openQr(context)),
+      (PhosphorIconsRegular.images, 'Photos', () => ScanFlow.importPhotos(context, folderId: folderId)),
+      (PhosphorIconsRegular.filePdf, 'PDF', () => ScanFlow.importPdf(context, folderId: folderId)),
     ];
     return SizedBox(
       height: 104,
@@ -447,9 +444,9 @@ class _FolderStrip extends StatelessWidget {
       options: const ['rename', 'color', 'delete'],
       label: (o) => switch (o) { 'rename' => 'Rename folder', 'color' => 'Change colour', _ => 'Delete folder' },
       icon: (o) => switch (o) {
-        'rename' => PhosphorIconsDuotone.pencilSimpleLine,
-        'color' => PhosphorIconsDuotone.palette,
-        _ => PhosphorIconsDuotone.trash,
+        'rename' => PhosphorIconsRegular.pencilSimpleLine,
+        'color' => PhosphorIconsRegular.palette,
+        _ => PhosphorIconsRegular.trash,
       },
     );
     if (!context.mounted) return;
@@ -482,14 +479,14 @@ class _FolderStrip extends StatelessWidget {
         children: [
           GlassChip(
             label: 'All',
-            icon: PhosphorIconsDuotone.files,
+            icon: PhosphorIconsRegular.files,
             selected: current == null,
             onTap: () => onSelect(null),
           ),
           const SizedBox(width: 8),
           GlassChip(
             label: 'Favourites',
-            icon: PhosphorIconsDuotone.star,
+            icon: PhosphorIconsRegular.star,
             selected: current == _favorites,
             onTap: () => onSelect(_favorites),
           ),
@@ -499,7 +496,7 @@ class _FolderStrip extends StatelessWidget {
               onLongPress: () => _folderMenu(context, f),
               child: GlassChip(
                 label: f.name,
-                icon: PhosphorIconsDuotone.folderSimple,
+                icon: PhosphorIconsRegular.folderSimple,
                 selected: current == f.id,
                 onTap: () => current == f.id ? _folderMenu(context, f) : onSelect(f.id),
               ),

@@ -102,13 +102,13 @@ class _NavBar extends StatelessWidget {
                     curve: Curves.easeOut,
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
                     decoration: BoxDecoration(
-                      color: selected ? g.accent.primary.withValues(alpha: g.dark ? 0.22 : 0.14) : Colors.transparent,
+                      color: selected ? g.faint : Colors.transparent,
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: PhosphorIcon(
                       selected ? active : icon,
                       size: 23,
-                      color: selected ? g.accent.primary : g.muted,
+                      color: selected ? g.text : g.muted,
                     ),
                   ),
                   const SizedBox(height: 3),
@@ -135,7 +135,7 @@ class _NavBar extends StatelessWidget {
           child: Container(
             height: 72,
             decoration: BoxDecoration(
-              color: g.dark ? const Color(0xFF151927).withValues(alpha: 0.72) : Colors.white.withValues(alpha: 0.72),
+              color: g.dark ? const Color(0xFF161618).withValues(alpha: 0.82) : Colors.white.withValues(alpha: 0.86),
               borderRadius: BorderRadius.circular(28),
               border: Border.all(color: g.border),
             ),
@@ -154,18 +154,11 @@ class _NavBar extends StatelessWidget {
                       height: 52,
                       margin: const EdgeInsets.symmetric(horizontal: 6),
                       decoration: BoxDecoration(
-                        gradient: g.accent.gradient,
+                        color: g.accent.primary,
                         borderRadius: BorderRadius.circular(18),
-                        boxShadow: [
-                          BoxShadow(
-                            color: g.accent.primary.withValues(alpha: 0.45),
-                            blurRadius: 18,
-                            offset: const Offset(0, 6),
-                          ),
-                        ],
                       ),
                       alignment: Alignment.center,
-                      child: const PhosphorIcon(PhosphorIconsBold.scan, color: Colors.white, size: 27),
+                      child: PhosphorIcon(PhosphorIconsBold.scan, color: g.onAccent, size: 26),
                     ),
                   ),
                 ),

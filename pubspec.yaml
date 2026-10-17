@@ -61,6 +61,3 @@ flutter:
     - family: PhosphorFill
       fonts:
         - asset: assets/fonts/Phosphor-Fill.ttf
-    - family: PhosphorDuotone
-      fonts:
-        - asset: assets/fonts/Phosphor-Duotone.ttf

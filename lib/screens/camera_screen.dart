@@ -673,7 +673,7 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const PhosphorIcon(PhosphorIconsDuotone.cameraSlash, color: Colors.white, size: 56),
+              const PhosphorIcon(PhosphorIconsRegular.cameraSlash, color: Colors.white, size: 56),
               const SizedBox(height: 18),
               Text(
                 _error!,

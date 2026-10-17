@@ -87,12 +87,12 @@ class _SignaturePadScreenState extends State<SignaturePadScreen> {
                 subtitle: 'Sign inside the box',
                 actions: [
                   GlassIconButton(
-                    icon: PhosphorIconsDuotone.arrowCounterClockwise,
+                    icon: PhosphorIconsRegular.arrowCounterClockwise,
                     tooltip: 'Undo',
                     onTap: _strokes.isEmpty ? null : () => setState(_strokes.removeLast),
                   ),
                   GlassIconButton(
-                    icon: PhosphorIconsDuotone.eraser,
+                    icon: PhosphorIconsRegular.eraser,
                     tooltip: 'Clear',
                     onTap: () => setState(_strokes.clear),
                   ),

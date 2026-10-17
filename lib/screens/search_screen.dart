@@ -103,7 +103,7 @@ class _SearchScreenState extends State<SearchScreen> {
           child: _q.trim().isEmpty
               ? SingleChildScrollView(
                   child: EmptyState(
-                    icon: PhosphorIconsDuotone.textAa,
+                    icon: PhosphorIconsRegular.textAa,
                     title: 'Find anything you scanned',
                     message: 'DocMind reads the text on every page, so you can search inside bills, notes and letters.',
                   ),
@@ -111,7 +111,7 @@ class _SearchScreenState extends State<SearchScreen> {
               : results.isEmpty
                   ? SingleChildScrollView(
                       child: EmptyState(
-                        icon: PhosphorIconsDuotone.magnifyingGlassMinus,
+                        icon: PhosphorIconsRegular.magnifyingGlassMinus,
                         title: 'No matches',
                         message: 'Nothing contains “${_q.trim()}”. Pages still being read will show up shortly.',
                       ),

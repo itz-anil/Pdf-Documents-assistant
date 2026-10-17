@@ -223,7 +223,7 @@ class _PasswordDialogState extends State<_PasswordDialog> {
     return AlertDialog(
       title: Row(
         children: [
-          IconBadge(PhosphorIconsDuotone.lockKey, size: 36),
+          IconBadge(PhosphorIconsRegular.lockKey, size: 36),
           const SizedBox(width: 12),
           Expanded(child: Text(widget.title, style: const TextStyle(fontWeight: FontWeight.w700))),
         ],
@@ -290,7 +290,7 @@ Future<T?> pickOption<T>(
           ),
           for (final o in options)
             GlassTile(
-              icon: icon?.call(o) ?? PhosphorIconsDuotone.circle,
+              icon: icon?.call(o) ?? PhosphorIconsRegular.circle,
               title: label(o),
               subtitle: subtitle?.call(o),
               trailing: o == selected
@@ -319,7 +319,7 @@ Future<void> showResultSheet(BuildContext context, {required String title, requi
           children: [
             Row(
               children: [
-                IconBadge(PhosphorIconsDuotone.sealCheck, filled: true, size: 52),
+                IconBadge(PhosphorIconsRegular.sealCheck, filled: true, size: 52),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
@@ -346,48 +346,37 @@ Future<void> showResultSheet(BuildContext context, {required String title, requi
             const SizedBox(height: 20),
             GradientButton(
               label: 'Share',
-              icon: PhosphorIconsDuotone.shareNetwork,
+              icon: PhosphorIconsRegular.shareNetwork,
               expand: true,
               onTap: () => ExportService.share(files),
             ),
             const SizedBox(height: 10),
             Row(
               children: [
-                if (single) ...[
-                  Expanded(
-                    child: GlassButton(
-                      label: 'Save',
-                      icon: PhosphorIconsDuotone.downloadSimple,
-                      onTap: () async {
-                        final ok = await ExportService.saveToDevice(files.first);
-                        if (ok && ctx.mounted) toast(ctx, 'Saved to device');
-                      },
-                    ),
+                Expanded(
+                  child: GlassButton(
+                    label: single ? 'Save to phone' : 'Save all',
+                    icon: PhosphorIconsRegular.downloadSimple,
+                    onTap: () async {
+                      try {
+                        final where = await ExportService.saveAllToDevice(files);
+                        if (ctx.mounted) toast(ctx, single ? 'Saved to $where' : '${files.length} files saved to $where');
+                      } catch (e) {
+                        if (ctx.mounted) toast(ctx, friendlyError(e), error: true);
+                      }
+                    },
                   ),
+                ),
+                if (single) ...[
                   const SizedBox(width: 10),
                   Expanded(
                     child: GlassButton(
                       label: 'Open',
-                      icon: PhosphorIconsDuotone.arrowSquareOut,
+                      icon: PhosphorIconsRegular.arrowSquareOut,
                       onTap: () => ExportService.open(files.first),
                     ),
                   ),
-                ] else
-                  Expanded(
-                    child: GlassButton(
-                      label: 'Save all as ZIP',
-                      icon: PhosphorIconsDuotone.fileZip,
-                      onTap: () async {
-                        final store = ctx.read<LibraryStore>();
-                        final dir = await store.scratch('zip');
-                        final z = await ExportService.zip(
-                          files.map((f) => ZipEntrySource(f.split(Platform.pathSeparator).last, f)).toList(),
-                          '${dir.path}/DocMind files.zip',
-                        );
-                        await ExportService.saveToDevice(z.path);
-                      },
-                    ),
-                  ),
+                ],
               ],
             ),
           ],

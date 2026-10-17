@@ -70,7 +70,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                 subtitle: docMeta(doc),
                 actions: [
                   GlassIconButton(
-                    icon: doc.favorite ? PhosphorIconsFill.star : PhosphorIconsDuotone.star,
+                    icon: doc.favorite ? PhosphorIconsFill.star : PhosphorIconsRegular.star,
                     color: doc.favorite ? const Color(0xFFF5B301) : null,
                     tooltip: doc.favorite ? 'Remove from favourites' : 'Add to favourites',
                     onTap: () {
@@ -146,7 +146,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
                 onText: () => Navigator.of(context).push(MaterialPageRoute(
                   builder: (_) => OcrTextScreen(doc: doc, initialPage: _current),
                 )),
-                onSave: () => DocActions.savePdf(context, doc),
+                onSave: () => DocActions.saveSheet(context, doc),
               ),
             ],
           ),
@@ -314,11 +314,11 @@ class _ActionBar extends StatelessWidget {
       padding: EdgeInsets.fromLTRB(8, 10, 8, bottom + 10),
       child: Row(
         children: [
-          item(PhosphorIconsDuotone.pencilSimple, 'Edit', onEdit),
-          item(PhosphorIconsDuotone.signature, 'Sign', onSign),
-          item(PhosphorIconsDuotone.shareNetwork, 'Share', onShare, primary: true),
-          item(PhosphorIconsDuotone.textT, 'Text', onText),
-          item(PhosphorIconsDuotone.downloadSimple, 'Save', onSave),
+          item(PhosphorIconsRegular.pencilSimple, 'Edit', onEdit),
+          item(PhosphorIconsRegular.signature, 'Sign', onSign),
+          item(PhosphorIconsRegular.shareNetwork, 'Share', onShare, primary: true),
+          item(PhosphorIconsRegular.textT, 'Text', onText),
+          item(PhosphorIconsRegular.downloadSimple, 'Save', onSave),
         ],
       ),
     );

@@ -80,9 +80,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Row(
               children: [
                 for (final (mode, icon, label) in [
-                  (ThemeMode.system, PhosphorIconsDuotone.circleHalf, 'Auto'),
-                  (ThemeMode.light, PhosphorIconsDuotone.sun, 'Light'),
-                  (ThemeMode.dark, PhosphorIconsDuotone.moon, 'Dark'),
+                  (ThemeMode.system, PhosphorIconsRegular.circleHalf, 'Auto'),
+                  (ThemeMode.light, PhosphorIconsRegular.sun, 'Light'),
+                  (ThemeMode.dark, PhosphorIconsRegular.moon, 'Dark'),
                 ])
                   Expanded(
                     child: Padding(
@@ -97,19 +97,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             duration: const Duration(milliseconds: 180),
                             height: 74,
                             decoration: BoxDecoration(
-                              gradient: s.themeMode == mode ? g.accent.gradient : null,
-                              color: s.themeMode == mode ? null : g.faint,
-                              borderRadius: BorderRadius.circular(16),
+                              color: s.themeMode == mode ? g.accent.primary : g.faint,
+                                                            borderRadius: BorderRadius.circular(16),
                             ),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                PhosphorIcon(icon, color: s.themeMode == mode ? Colors.white : g.text),
+                                PhosphorIcon(icon, color: s.themeMode == mode ? g.onAccent : g.text),
                                 const SizedBox(height: 6),
                                 Text(label,
                                     style: TextStyle(
                                       fontWeight: FontWeight.w700,
-                                      color: s.themeMode == mode ? Colors.white : g.text,
+                                      color: s.themeMode == mode ? g.onAccent : g.text,
                                     )),
                               ],
                             ),
@@ -142,9 +141,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           height: 32,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            gradient: accentPalettes[i].gradient,
+                            color: accentPalettes[i].resolve(g.dark).primary,
                             border: Border.all(
-                              color: i == s.accentIndex ? g.text : Colors.transparent,
+                              color: i == s.accentIndex ? g.text : g.border,
                               width: 2.5,
                             ),
                           ),
@@ -160,7 +159,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         const SectionLabel('Scanning'),
         group([
           GlassTile(
-            icon: PhosphorIconsDuotone.magicWand,
+            icon: PhosphorIconsRegular.magicWand,
             title: 'Default filter',
             subtitle: s.defaultFilter.label,
             trailing: arrow(),
@@ -171,20 +170,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 options: PageFilter.values,
                 label: (f) => f.label,
                 selected: s.defaultFilter,
-                icon: (_) => PhosphorIconsDuotone.magicWand,
+                icon: (_) => PhosphorIconsRegular.magicWand,
               );
               if (f != null) s.setDefaultFilter = f;
             },
           ),
           GlassTile(
-            icon: PhosphorIconsDuotone.aperture,
+            icon: PhosphorIconsRegular.aperture,
             title: 'Auto-capture',
             subtitle: 'Take the photo when the page is steady',
             trailing: Switch(value: s.autoCapture, onChanged: (v) => s.setAutoCapture = v),
             onTap: () => s.setAutoCapture = !s.autoCapture,
           ),
           GlassTile(
-            icon: PhosphorIconsDuotone.identificationCard,
+            icon: PhosphorIconsRegular.identificationCard,
             title: 'ID card size',
             subtitle: '${s.idCardSize.label} · ${s.idCardSize.hint}',
             trailing: arrow(),
@@ -196,13 +195,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 label: (v) => v.label,
                 subtitle: (v) => v.hint,
                 selected: s.idCardSize,
-                icon: (_) => PhosphorIconsDuotone.identificationCard,
+                icon: (_) => PhosphorIconsRegular.identificationCard,
               );
               if (v != null) s.setIdCardSize = v;
             },
           ),
           GlassTile(
-            icon: PhosphorIconsDuotone.image,
+            icon: PhosphorIconsRegular.image,
             title: 'Image quality',
             subtitle: '${s.quality.label} · ${s.quality.hint}',
             trailing: arrow(),
@@ -214,13 +213,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 label: (q) => q.label,
                 subtitle: (q) => q.hint,
                 selected: s.quality,
-                icon: (_) => PhosphorIconsDuotone.image,
+                icon: (_) => PhosphorIconsRegular.image,
               );
               if (q != null) s.setQuality = q;
             },
           ),
           GlassTile(
-            icon: PhosphorIconsDuotone.fileDashed,
+            icon: PhosphorIconsRegular.fileDashed,
             title: 'PDF page size',
             subtitle: s.pageSize.label,
             trailing: arrow(),
@@ -231,7 +230,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 options: PageSizeOption.values,
                 label: (v) => v.label,
                 selected: s.pageSize,
-                icon: (_) => PhosphorIconsDuotone.fileDashed,
+                icon: (_) => PhosphorIconsRegular.fileDashed,
               );
               if (v != null) s.setPageSize = v;
             },
@@ -241,21 +240,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
         const SectionLabel('Text recognition'),
         group([
           GlassTile(
-            icon: PhosphorIconsDuotone.textAa,
+            icon: PhosphorIconsRegular.textAa,
             title: 'Read text automatically',
             subtitle: 'Makes scans searchable and PDFs selectable',
             trailing: Switch(value: s.autoOcr, onChanged: (v) => s.setAutoOcr = v),
             onTap: () => s.setAutoOcr = !s.autoOcr,
           ),
           GlassTile(
-            icon: PhosphorIconsDuotone.tag,
+            icon: PhosphorIconsRegular.tag,
             title: 'Smart file names',
             subtitle: 'Name scans from their first line of text',
             trailing: Switch(value: s.smartNames, onChanged: (v) => s.setSmartNames = v),
             onTap: () => s.setSmartNames = !s.smartNames,
           ),
           GlassTile(
-            icon: PhosphorIconsDuotone.textbox,
+            icon: PhosphorIconsRegular.textbox,
             title: 'Name prefix',
             subtitle: '“${s.namePrefix} 16 Oct 2026, 10.30”',
             trailing: arrow(),
@@ -269,14 +268,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
         const SectionLabel('Privacy & security'),
         group([
           GlassTile(
-            icon: PhosphorIconsDuotone.fingerprint,
+            icon: PhosphorIconsRegular.fingerprint,
             title: 'App Lock',
             subtitle: 'Fingerprint, face or screen lock to open DocMind',
             trailing: Switch(value: s.appLock, onChanged: (v) => _toggleLock(s, v)),
             onTap: () => _toggleLock(s, !s.appLock),
           ),
           GlassTile(
-            icon: PhosphorIconsDuotone.signature,
+            icon: PhosphorIconsRegular.signature,
             title: 'Saved signature',
             subtitle: s.savedSignature == null ? 'None — draw one to reuse it' : 'Tap to redraw',
             trailing: s.savedSignature == null
@@ -288,12 +287,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       if (await f.exists()) await f.delete();
                       s.setSavedSignature = null;
                     },
-                    icon: PhosphorIcon(PhosphorIconsDuotone.trash, color: g.danger),
+                    icon: PhosphorIcon(PhosphorIconsRegular.trash, color: g.danger),
                   ),
             onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SignaturePadScreen())),
           ),
           GlassTile(
-            icon: PhosphorIconsDuotone.vibrate,
+            icon: PhosphorIconsRegular.vibrate,
             title: 'Haptic feedback',
             trailing: Switch(value: s.haptics, onChanged: (v) => s.setHaptics = v),
             onTap: () => s.setHaptics = !s.haptics,
@@ -305,7 +304,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           FutureBuilder<(int, int)>(
             future: _usage,
             builder: (_, snap) => GlassTile(
-              icon: PhosphorIconsDuotone.hardDrives,
+              icon: PhosphorIconsRegular.hardDrives,
               title: 'Documents',
               subtitle: snap.hasData
                   ? '${store.docs.length} documents · ${formatBytes(snap.data!.$1)}'
@@ -315,7 +314,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           FutureBuilder<(int, int)>(
             future: _usage,
             builder: (_, snap) => GlassTile(
-              icon: PhosphorIconsDuotone.broom,
+              icon: PhosphorIconsRegular.broom,
               title: 'Clear temporary files',
               subtitle: snap.hasData ? 'Exports and shares · ${formatBytes(snap.data!.$2)}' : 'Calculating…',
               onTap: () async {
@@ -331,7 +330,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         const SectionLabel('About'),
         group([
           GlassTile(
-            icon: PhosphorIconsDuotone.scan,
+            icon: PhosphorIconsRegular.scan,
             title: 'DocMind 1.0',
             subtitle: 'Offline scanner · nothing leaves your phone unless you share it',
           ),

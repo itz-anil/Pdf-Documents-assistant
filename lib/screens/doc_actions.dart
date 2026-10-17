@@ -60,10 +60,10 @@ class DocActions {
               ? 'New folder…'
               : store.folders.firstWhere((f) => f.id == o).name,
       icon: (o) => o == create
-          ? PhosphorIconsDuotone.folderPlus
+          ? PhosphorIconsRegular.folderPlus
           : o == none
-              ? PhosphorIconsDuotone.folderDashed
-              : PhosphorIconsDuotone.folder,
+              ? PhosphorIconsRegular.folderDashed
+              : PhosphorIconsRegular.folder,
       selected: docs.length == 1 ? (docs.first.folderId ?? none) : null,
     );
     if (choice == null || !context.mounted) return;
@@ -97,7 +97,7 @@ class DocActions {
         children: [
           _sheetTitle(ctx, 'Share', doc.name),
           GlassTile(
-            icon: PhosphorIconsDuotone.filePdf,
+            icon: PhosphorIconsRegular.filePdf,
             title: 'PDF',
             subtitle: 'Searchable PDF with selectable text',
             onTap: () {
@@ -106,7 +106,7 @@ class DocActions {
             },
           ),
           GlassTile(
-            icon: PhosphorIconsDuotone.images,
+            icon: PhosphorIconsRegular.images,
             title: 'Images (JPG)',
             subtitle: '${doc.pages.length} image${doc.pages.length == 1 ? '' : 's'}',
             onTap: () async {
@@ -116,7 +116,7 @@ class DocActions {
             },
           ),
           GlassTile(
-            icon: PhosphorIconsDuotone.fileZip,
+            icon: PhosphorIconsRegular.fileZip,
             title: 'ZIP archive',
             subtitle: 'PDF, images and text in one file',
             onTap: () {
@@ -125,7 +125,7 @@ class DocActions {
             },
           ),
           GlassTile(
-            icon: PhosphorIconsDuotone.lockKey,
+            icon: PhosphorIconsRegular.lockKey,
             title: 'Password-protected PDF',
             subtitle: 'Only people with the password can open it',
             onTap: () {
@@ -134,7 +134,7 @@ class DocActions {
             },
           ),
           GlassTile(
-            icon: PhosphorIconsDuotone.arrowsInSimple,
+            icon: PhosphorIconsRegular.arrowsInSimple,
             title: 'Compressed PDF',
             subtitle: 'Smaller file for email and chat',
             onTap: () {
@@ -143,7 +143,7 @@ class DocActions {
             },
           ),
           GlassTile(
-            icon: PhosphorIconsDuotone.textAa,
+            icon: PhosphorIconsRegular.textAa,
             title: 'Text only',
             subtitle: 'Recognised text as a .txt file',
             onTap: () async {
@@ -180,11 +180,83 @@ class DocActions {
     if (f != null) await ExportService.share([f.path], subject: doc.name);
   }
 
-  static Future<void> savePdf(BuildContext context, DocItem doc) async {
-    final f = await runBusy(context, 'Creating PDF…', (_) => ExportService.docPdf(context.read(), doc));
-    if (f == null) return;
-    final ok = await ExportService.saveToDevice(f.path);
-    if (ok && context.mounted) toast(context, 'PDF saved');
+  /// Creates the files and copies them into Downloads (or Gallery for JPG).
+  static Future<void> _save(BuildContext context, String busy, Future<List<String>> Function() make) async {
+    final where = await runBusy(context, busy, (progress) async {
+      final files = await make();
+      progress.value = 'Saving…';
+      return (await ExportService.saveAllToDevice(files), files.length);
+    });
+    if (where != null && context.mounted) {
+      toast(context, where.$2 == 1 ? 'Saved to ${where.$1}' : '${where.$2} files saved to ${where.$1}');
+    }
+  }
+
+  static Future<void> savePdf(BuildContext context, DocItem doc) => _save(
+      context, 'Creating PDF…', () async => [(await ExportService.docPdf(context.read(), doc)).path]);
+
+  /// "Save as…" — PDF, JPG pages, ZIP, protected or compressed PDF.
+  static Future<void> saveSheet(BuildContext context, DocItem doc) {
+    final store = context.read<LibraryStore>();
+    return showGlassSheet<void>(
+      context,
+      builder: (ctx) {
+        void go(Future<void> Function() a) {
+          Navigator.pop(ctx);
+          a();
+        }
+
+        return ListView(
+          shrinkWrap: true,
+          padding: const EdgeInsets.fromLTRB(10, 14, 10, 12),
+          children: [
+            _sheetTitle(ctx, 'Save to phone', 'PDF & ZIP → Downloads/DocMind · JPG → Gallery'),
+            GlassTile(
+              icon: PhosphorIconsRegular.filePdf,
+              title: 'Save as PDF',
+              subtitle: 'Searchable PDF, ${doc.pages.length} page${doc.pages.length == 1 ? '' : 's'}',
+              onTap: () => go(() => savePdf(context, doc)),
+            ),
+            GlassTile(
+              icon: PhosphorIconsRegular.image,
+              title: 'Save as JPG',
+              subtitle: doc.pages.length == 1 ? 'One image in your Gallery' : '${doc.pages.length} images in your Gallery',
+              onTap: () => go(() => _save(context, 'Preparing images…', () => ExportService.docImages(store, doc))),
+            ),
+            GlassTile(
+              icon: PhosphorIconsRegular.fileZip,
+              title: 'Save as ZIP',
+              subtitle: 'PDF, images and text together',
+              onTap: () => go(() => zip(context, [doc], save: true)),
+            ),
+            GlassTile(
+              icon: PhosphorIconsRegular.lockKey,
+              title: 'Save password-protected PDF',
+              subtitle: 'AES-256 encrypted',
+              onTap: () => go(() async {
+                final pw = await promptPassword(context,
+                    title: 'Protect PDF', message: 'This password will be needed to open the PDF.', confirmField: true, action: 'Save');
+                if (pw == null || !context.mounted) return;
+                await _save(context, 'Encrypting PDF…', () async => [(await ExportService.docPdf(store, doc, password: pw)).path]);
+              }),
+            ),
+            GlassTile(
+              icon: PhosphorIconsRegular.arrowsInSimple,
+              title: 'Save compressed PDF',
+              subtitle: 'Smaller file, good for sharing',
+              onTap: () => go(() => _save(context, 'Compressing…',
+                  () async => [(await ExportService.docPdf(store, doc, compress: ImageQuality.small)).path])),
+            ),
+            if (doc.fullText.isNotEmpty)
+              GlassTile(
+                icon: PhosphorIconsRegular.textAa,
+                title: 'Save text (.txt)',
+                onTap: () => go(() => _save(context, 'Saving text…', () async => [(await ExportService.docText(store, doc)).path])),
+              ),
+          ],
+        );
+      },
+    );
   }
 
   static Future<void> print(BuildContext context, DocItem doc) async {
@@ -215,9 +287,9 @@ class DocActions {
       label: (q) => q.label,
       subtitle: (q) => q.hint,
       icon: (q) => switch (q) {
-        ImageQuality.high => PhosphorIconsDuotone.sparkle,
-        ImageQuality.balanced => PhosphorIconsDuotone.scales,
-        ImageQuality.small => PhosphorIconsDuotone.arrowsInSimple,
+        ImageQuality.high => PhosphorIconsRegular.sparkle,
+        ImageQuality.balanced => PhosphorIconsRegular.scales,
+        ImageQuality.small => PhosphorIconsRegular.arrowsInSimple,
       },
     );
     if (level == null || !context.mounted) return;
@@ -227,7 +299,7 @@ class DocActions {
     }
   }
 
-  static Future<void> zip(BuildContext context, List<DocItem> docs) async {
+  static Future<void> zip(BuildContext context, List<DocItem> docs, {bool save = false}) async {
     final result = await showGlassSheet<(Set<ZipContent>, String?)>(
       context,
       builder: (_) => _ZipOptions(count: docs.length),
@@ -238,14 +310,22 @@ class DocActions {
       'Creating ZIP…',
       (_) => ExportService.docsZip(context.read(), docs, result.$1, password: result.$2),
     );
-    if (f != null && context.mounted) {
-      await showResultSheet(
-        context,
-        title: 'ZIP ready',
-        files: [f.path],
-        note: result.$2 != null ? 'Password protected (AES)' : null,
-      );
+    if (f == null || !context.mounted) return;
+    if (save) {
+      try {
+        final where = await ExportService.saveToDevice(f.path);
+        if (context.mounted) toast(context, 'Saved to $where');
+      } catch (e) {
+        if (context.mounted) toast(context, friendlyError(e), error: true);
+      }
+      return;
     }
+    await showResultSheet(
+      context,
+      title: 'ZIP ready',
+      files: [f.path],
+      note: result.$2 != null ? 'Password protected (AES)' : null,
+    );
   }
 
   // ---------------------------------------------------------------- menu
@@ -266,72 +346,72 @@ class DocActions {
           children: [
             _sheetTitle(ctx, doc.name, docMeta(doc)),
             GlassTile(
-              icon: PhosphorIconsDuotone.shareNetwork,
+              icon: PhosphorIconsRegular.shareNetwork,
               title: 'Share',
               onTap: () => go(() => shareSheet(context, doc)),
             ),
             GlassTile(
-              icon: PhosphorIconsDuotone.pencilSimpleLine,
+              icon: PhosphorIconsRegular.pencilSimpleLine,
               title: 'Rename',
               onTap: () => go(() => rename(context, doc)),
             ),
             GlassTile(
-              icon: doc.favorite ? PhosphorIconsDuotone.starHalf : PhosphorIconsDuotone.star,
+              icon: doc.favorite ? PhosphorIconsRegular.starHalf : PhosphorIconsRegular.star,
               title: doc.favorite ? 'Remove from favourites' : 'Add to favourites',
               onTap: () => go(() async => store.toggleFavorite(doc)),
             ),
             GlassTile(
-              icon: PhosphorIconsDuotone.folderSimple,
+              icon: PhosphorIconsRegular.folderSimple,
               title: 'Move to folder',
               onTap: () => go(() => moveToFolder(context, [doc])),
             ),
             GlassTile(
-              icon: PhosphorIconsDuotone.downloadSimple,
-              title: 'Save PDF to device',
-              onTap: () => go(() => savePdf(context, doc)),
+              icon: PhosphorIconsRegular.downloadSimple,
+              title: 'Save to phone',
+              onTap: () => go(() => saveSheet(context, doc)),
             ),
             GlassTile(
-              icon: PhosphorIconsDuotone.fileZip,
+              icon: PhosphorIconsRegular.fileZip,
               title: 'Export as ZIP',
               onTap: () => go(() => zip(context, [doc])),
             ),
             GlassTile(
-              icon: PhosphorIconsDuotone.lockKey,
+              icon: PhosphorIconsRegular.lockKey,
               title: 'Password-protect PDF',
               onTap: () => go(() => protectedPdf(context, doc)),
             ),
             GlassTile(
-              icon: PhosphorIconsDuotone.arrowsInSimple,
+              icon: PhosphorIconsRegular.arrowsInSimple,
               title: 'Compress PDF',
               onTap: () => go(() => compress(context, doc)),
             ),
             GlassTile(
-              icon: PhosphorIconsDuotone.textT,
+              icon: PhosphorIconsRegular.textT,
               title: 'View text (OCR)',
               onTap: () => go(() => Navigator.of(context)
                   .push(MaterialPageRoute(builder: (_) => OcrTextScreen(doc: doc)))),
             ),
             if (doc.mode == ScanMode.businessCard)
               GlassTile(
-                icon: PhosphorIconsDuotone.addressBook,
+                icon: PhosphorIconsRegular.addressBook,
                 title: 'Save as contact',
                 onTap: () => go(() => Navigator.of(context)
                     .push(MaterialPageRoute(builder: (_) => BusinessCardScreen(doc: doc)))),
               ),
             GlassTile(
-              icon: PhosphorIconsDuotone.printer,
+              icon: PhosphorIconsRegular.printer,
               title: 'Print',
               onTap: () => go(() => print(context, doc)),
             ),
             GlassTile(
-              icon: PhosphorIconsDuotone.copy,
+              icon: PhosphorIconsRegular.copy,
               title: 'Duplicate',
               onTap: () => go(() async {
                 await runBusy(context, 'Duplicating…', (_) => store.duplicateDoc(doc));
               }),
             ),
             GlassTile(
-              icon: PhosphorIconsDuotone.trash,
+              icon: PhosphorIconsRegular.trash,
               title: 'Delete',
               danger: true,
               onTap: () => go(() async {
@@ -392,11 +472,11 @@ class _ZipOptionsState extends State<_ZipOptions> {
               style: TextStyle(color: g.muted),
             ),
           ),
-          option(ZipContent.pdf, PhosphorIconsDuotone.filePdf, 'PDF', 'Searchable PDF per document'),
-          option(ZipContent.images, PhosphorIconsDuotone.images, 'Images', 'Every page as JPG'),
-          option(ZipContent.text, PhosphorIconsDuotone.textAa, 'Text', 'Recognised text (.txt)'),
+          option(ZipContent.pdf, PhosphorIconsRegular.filePdf, 'PDF', 'Searchable PDF per document'),
+          option(ZipContent.images, PhosphorIconsRegular.images, 'Images', 'Every page as JPG'),
+          option(ZipContent.text, PhosphorIconsRegular.textAa, 'Text', 'Recognised text (.txt)'),
           GlassTile(
-            icon: PhosphorIconsDuotone.password,
+            icon: PhosphorIconsRegular.password,
             title: 'Protect with password',
             subtitle: 'AES-encrypted ZIP',
             trailing: Switch(value: _protect, onChanged: (v) => setState(() => _protect = v)),
@@ -429,7 +509,7 @@ class _ZipOptionsState extends State<_ZipOptions> {
             padding: const EdgeInsets.symmetric(horizontal: 14),
             child: GradientButton(
               label: 'Create ZIP',
-              icon: PhosphorIconsDuotone.fileZip,
+              icon: PhosphorIconsRegular.fileZip,
               expand: true,
               onTap: _content.isEmpty || (_protect && _pw.text.isEmpty)
                   ? null

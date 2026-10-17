@@ -169,7 +169,7 @@ class _IdCardScreenState extends State<IdCardScreen> {
                         onTap: () => _retake(false),
                         child: Row(
                           children: [
-                            IconBadge(PhosphorIconsDuotone.plusCircle, size: 44),
+                            IconBadge(PhosphorIconsRegular.plusCircle, size: 44),
                             const SizedBox(width: 14),
                             Expanded(
                               child: Text('Add back side',

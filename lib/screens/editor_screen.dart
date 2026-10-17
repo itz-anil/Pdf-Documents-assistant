@@ -120,7 +120,7 @@ class _EditorScreenState extends State<EditorScreen> {
                 onBack: _done,
                 actions: [
                   GlassIconButton(
-                    icon: PhosphorIconsDuotone.pencilSimpleLine,
+                    icon: PhosphorIconsRegular.pencilSimpleLine,
                     tooltip: 'Rename',
                     onTap: () async {
                       final n = await promptText(context, title: 'Rename document', initial: doc.name);
@@ -435,8 +435,7 @@ class _FilterStrip extends StatelessWidget {
                         padding: const EdgeInsets.all(3),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(14),
-                          gradient: sel ? g.accent.gradient : null,
-                          color: sel ? null : g.fill,
+                          color: sel ? g.accent.primary : g.fill,
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(11),
@@ -465,7 +464,7 @@ class _FilterStrip extends StatelessWidget {
             padding: const EdgeInsets.only(right: 12),
             child: TextButton.icon(
               onPressed: enabled ? onApplyAll : null,
-              icon: const PhosphorIcon(PhosphorIconsDuotone.copySimple, size: 18),
+              icon: const PhosphorIcon(PhosphorIconsRegular.copySimple, size: 18),
               label: Text('Apply “${current.label}” to all pages'),
             ),
           ),
@@ -519,8 +518,8 @@ class _AdjustPanel extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          row(PhosphorIconsDuotone.sun, 'Brightness', brightness, -0.4, 0.4, onBrightness),
-          row(PhosphorIconsDuotone.circleHalf, 'Contrast', contrast, 0.6, 1.8, onContrast),
+          row(PhosphorIconsRegular.sun, 'Brightness', brightness, -0.4, 0.4, onBrightness),
+          row(PhosphorIconsRegular.circleHalf, 'Contrast', contrast, 0.6, 1.8, onContrast),
           Align(
             alignment: Alignment.centerRight,
             child: TextButton(onPressed: onReset, child: const Text('Reset')),
