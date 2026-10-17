@@ -75,7 +75,7 @@ lib/
 
 ## Libraries
 
-- Google ML Kit: document scanner and text recognition
+- Google ML Kit: on-device text recognition
 - Syncfusion Flutter PDF: PDF writing, merging and encryption (Community
   License, free for individuals)
 - pdfrx: PDF rendering
